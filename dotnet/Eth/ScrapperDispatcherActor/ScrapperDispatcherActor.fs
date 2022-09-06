@@ -17,7 +17,7 @@ module ScrapperDispatcherActor =
       Abi: string
       BlockRange: BlockRangeDTO }
 
-  let toDTO (request: ScrapperRequest) : ScrapperRequestDTO =
+  let private toDTO (request: ScrapperRequest) : ScrapperRequestDTO =
     { ContractAddress = request.ContractAddress
       Abi = request.Abi
       BlockRange =
@@ -28,11 +28,9 @@ module ScrapperDispatcherActor =
           To =
             match request.BlockRange.To with
             | Some _to -> System.Nullable(_to)
-            | None -> System.Nullable() }
+            | None -> System.Nullable() } }
 
-    }
-
-  let checkStop (result: Result) =
+  let private checkStop (result: Result) =
     match result with
     // read successfully till the latest block
     | Ok success when success.RequestBlockRange.To = None -> true
@@ -44,18 +42,10 @@ module ScrapperDispatcherActor =
     | _ -> false
 
 
-  let continueDispatch (proxyFactory: Client.IActorProxyFactory) actorId data =
-
+  let private runScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
     task {
 
       let actor = proxyFactory.Create(actorId, "ScrapperActor")
-
-      let blockRange = nextBlockRangeCalc data.Result
-
-      let scrapperRequest: ScrapperRequest =
-        { ContractAddress = data.ContractAddress
-          Abi = data.Abi
-          BlockRange = blockRange }
 
       let dto = scrapperRequest |> toDTO
 
@@ -70,19 +60,13 @@ module ScrapperDispatcherActor =
     interface IScrapperDispatcherActor with
       member this.Start data =
         task {
-          let actorId = this.Id
-
-          let actor = this.ProxyFactory.Create(actorId, "ScrapperActor")
 
           let scrapperRequest: ScrapperRequest =
             { ContractAddress = data.ContractAddress
               Abi = data.Abi
               BlockRange = { From = None; To = None } }
 
-          let dto = scrapperRequest |> toDTO
-
-          actor.InvokeMethodAsync<ScrapperRequestDTO, Result>("scrap", dto)
-          |> ignore
+          do! runScrapper this.ProxyFactory this.Id scrapperRequest
 
           return true
         }
@@ -91,7 +75,15 @@ module ScrapperDispatcherActor =
         match checkStop data.Result with
         | false ->
           task {
-            do! continueDispatch this.ProxyFactory this.Id data
+            let blockRange = nextBlockRangeCalc data.Result
+
+            let scrapperRequest: ScrapperRequest =
+              { ContractAddress = data.ContractAddress
+                Abi = data.Abi
+                BlockRange = blockRange }
+
+            do! runScrapper this.ProxyFactory this.Id scrapperRequest
+
             return true
           }
         | true -> task { return false }
