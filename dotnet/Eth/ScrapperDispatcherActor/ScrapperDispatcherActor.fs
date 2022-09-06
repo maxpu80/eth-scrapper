@@ -8,17 +8,6 @@ module ScrapperDispatcherActor =
   open System.Threading.Tasks
   open ScrapperModels
 
-  type StartData =
-    { ContractAddress: string
-      Abi: string }
-
-  type ContinueData =
-    { ContractAddress: string
-      Abi: string
-      Result: Result }
-
-  type Error = | Unknown
-
   type BlockRangeDTO =
     { From: System.Nullable<uint>
       To: System.Nullable<uint> }
@@ -43,6 +32,37 @@ module ScrapperDispatcherActor =
 
     }
 
+  let checkStop (result: Result) =
+    match result with
+    // read successfully till the latest block
+    | Ok success when success.RequestBlockRange.To = None -> true
+    | Error error ->
+      match error.Data with
+      // read successfully till the latest block
+      | EmptyResult when error.RequestBlockRange.To = None -> true
+      | _ -> false
+    | _ -> false
+
+
+  let continueDispatch (proxyFactory: Client.IActorProxyFactory) actorId data =
+
+    task {
+
+      let actor = proxyFactory.Create(actorId, "ScrapperActor")
+
+      let blockRange = nextBlockRangeCalc data.Result
+
+      let scrapperRequest: ScrapperRequest =
+        { ContractAddress = data.ContractAddress
+          Abi = data.Abi
+          BlockRange = blockRange }
+
+      let dto = scrapperRequest |> toDTO
+
+      actor.InvokeMethodAsync<ScrapperRequestDTO, Result>("scrap", dto)
+      |> ignore
+    }
+
   [<Actor(TypeName = "scrapper-dispatcher")>]
   type ScrapperDispatcherActor(host: ActorHost) =
     inherit Actor(host)
@@ -53,7 +73,6 @@ module ScrapperDispatcherActor =
           let actorId = this.Id
 
           let actor = this.ProxyFactory.Create(actorId, "ScrapperActor")
-
 
           let scrapperRequest: ScrapperRequest =
             { ContractAddress = data.ContractAddress
@@ -69,23 +88,10 @@ module ScrapperDispatcherActor =
         }
 
       member this.Continue data =
-
-        task {
-          let actorId = this.Id
-
-          let actor = this.ProxyFactory.Create(actorId, "ScrapperActor")
-
-          let blockRange = nextBlockRangeCalc data.Result
-
-          let scrapperRequest: ScrapperRequest =
-            { ContractAddress = data.ContractAddress
-              Abi = data.Abi
-              BlockRange = blockRange }
-
-          let dto = scrapperRequest |> toDTO
-
-          actor.InvokeMethodAsync<ScrapperRequestDTO, Result>("scrap", dto)
-          |> ignore
-
-          return true
-        }
+        match checkStop data.Result with
+        | false ->
+          task {
+            do! continueDispatch this.ProxyFactory this.Id data
+            return true
+          }
+        | true -> task { return false }

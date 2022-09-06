@@ -12,13 +12,6 @@ module NextBlockRangeCalc =
         To = None }
     resultRange
 
-  (*
-        1  - 100 | L
-        1  - 50  | E
-        50 - 100 | L
-        50 - 75  | E  
-        75 - 100 | S
-  *)
   let private errorNextBlockRangeCalc (error: Error) =
     match error.Data with
     | LimitExceeded ->

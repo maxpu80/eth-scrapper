@@ -51,7 +51,6 @@ module ScrapperActor =
             
             let! events = transferEventHandler.GetAllChangesAsync(filter)
 
-            printfn "222 %A" events
             return
               { Data = EmptyResult
                 BlockRange = { From = fromBlock; To = toBlock } }

@@ -3,18 +3,30 @@ import axios from "axios";
 import { Data as HandlerData, Error, handle, Result, Success } from "./handler";
 
 //
+
+interface RequestBlockRange {
+  from?: number;
+  to?: number;
+}
+
 interface Data {
   contractAddress: string;
   abi: string;
-  blockRange: { from?: number; to?: number };
+  blockRange: RequestBlockRange;
 }
 
-const mapPublishResultSuccess = (result: Success) => {
+const mapRequestBlockRange = (range: RequestBlockRange) => ({
+  from: range.from ? { Some: [range.from] } : null,
+  to: range.to ? { Some: [range.to] } : null,
+});
+
+const mapPublishResultSuccess = (requestBlockRange: RequestBlockRange, result: Success) => {
   return {
     Ok: [
       {
         events: result.events,
         blockRange: result.blockRange,
+        requestBlockRange: mapRequestBlockRange(requestBlockRange),
       },
     ],
   };
@@ -30,23 +42,24 @@ const mapPublishResultErrorData = (result: Error) => {
       return { Unknown: [] };
   }
 };
-const mapPublishResultError = (result: Error) => {
+const mapPublishResultError = (requestBlockRange: RequestBlockRange, result: Error) => {
   return {
     Error: [
       {
         data: mapPublishResultErrorData(result),
         blockRange: result.blockRange,
+        requestBlockRange: mapRequestBlockRange(requestBlockRange),
       },
     ],
   };
 };
 
-const mapPublishResult = (result: Result) => {
+const mapPublishResult = (requestBlockRange: RequestBlockRange, result: Result) => {
   switch (result.kind) {
     case "Success":
-      return mapPublishResultSuccess(result);
+      return mapPublishResultSuccess(requestBlockRange, result);
     case "Error":
-      return mapPublishResultError(result);
+      return mapPublishResultError(requestBlockRange, result);
   }
 };
 
@@ -54,7 +67,7 @@ const mapPublishPayload = (data: Data, result: Result) => {
   return {
     contractAddress: data.contractAddress,
     abi: data.abi,
-    result: mapPublishResult(result),
+    result: mapPublishResult(data.blockRange, result),
   };
 };
 

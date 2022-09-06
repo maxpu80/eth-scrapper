@@ -7,8 +7,11 @@ type EventData =
 
 type BlockRange = { From: uint; To: uint }
 
+type RequestBlockRange = { From: uint option; To: uint option }
+
 type Success =
   { Events: EventData list
+    RequestBlockRange : RequestBlockRange
     BlockRange: BlockRange }
 
 type ErrorData =
@@ -18,8 +21,7 @@ type ErrorData =
 
 type Error =
   { Data: ErrorData
+    RequestBlockRange : RequestBlockRange
     BlockRange: BlockRange }
 
 type Result = Result<Success, Error>
-
-type RequestBlockRange = { From: uint option; To: uint option }
