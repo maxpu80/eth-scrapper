@@ -16,7 +16,7 @@ const web3 = new Web3(web3Provider);
 export interface Data {
   contractAddress: string;
   abi: JSON;
-  blockRange: { form?: number; to?: number };
+  blockRange: { from?: number; to?: number };
 }
 
 export interface Entry {
@@ -65,13 +65,15 @@ const cleanupEventValues = (vals: any) =>
 
 // https://ethereum.stackexchange.com/questions/54967/how-to-get-only-past-2-days-events-using-getpastevents-everytime
 export const handle = async (data: Data): Promise<Result> => {
-  const fromBlock = data.blockRange.form || 0;
+  const fromBlock = data.blockRange.from || 0;
   const toBlock = data.blockRange.to || (await web3.eth.getBlockNumber());
 
+  
   const blockRange = {
     from: fromBlock,
     to: toBlock,
   };
+
   const contract = createContract(data.abi, data.contractAddress);
 
   try {

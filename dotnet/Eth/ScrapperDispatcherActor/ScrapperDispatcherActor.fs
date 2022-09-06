@@ -65,8 +65,6 @@ module ScrapperDispatcherActor =
           actor.InvokeMethodAsync<ScrapperRequestDTO, Result>("scrap", dto)
           |> ignore
 
-          printfn "111 %O" scrapperRequest
-
           return true
         }
 

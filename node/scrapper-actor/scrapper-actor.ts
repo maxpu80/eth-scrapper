@@ -74,15 +74,11 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
 
     await axios.put(url, payload);
 
-    //console.log("published !!!", url, payload);
-
     return payload;
   }
 
   async scrap(data: Data) {
-    console.log("scrapper::scrap:", data);
-
-    //const data = { ..._data, abi: _data.abi.replace(/\\"/g, '"') };
+    console.log("scrapper::scrap::start", data.blockRange);
 
     const abi = JSON.parse(data.abi);
 
@@ -93,6 +89,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     };
 
     const result = await handle(handlerData);
+    console.log("scrapper::scrap::result", result.blockRange, result.kind === "Success" ? "Success" : result.error);
 
     const publishedResult = await this.publish(data, result);
 
