@@ -2,6 +2,10 @@
 
 ###
 
+PUT {{host}}/v1.0/actors/scrapper-dispatcher/01-11/method/TestStart
+
+###
+
 PUT {{host}}/v1.0/actors/scrapper-dispatcher/01-11/method/Start
 
 {

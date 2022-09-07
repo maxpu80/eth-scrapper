@@ -38,7 +38,7 @@ module Program =
       opts.JsonSerializerOptions.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
       opts.JsonSerializerOptions.Converters.Add(converter)
       opts.Actors.RegisterActor<ScrapperStoreActor>())
-
+   
     let app = builder.Build()
 
     app.UseRouting()

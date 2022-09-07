@@ -10,8 +10,6 @@
 		<Compile Include="Program.fs" />
 	</ItemGroup>
 
-	<ItemGroup />
-
 	<ItemGroup>
 		<PackageReference Include="Dapr.Actors" Version="1.8.0" />
 		<PackageReference Include="Dapr.Actors.AspNetCore" Version="1.8.0" />
@@ -19,6 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Libs\Common\AzureBlob\AzureBlob.fsproj" />
 		<ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />
 	</ItemGroup>
 

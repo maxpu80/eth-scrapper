@@ -16,6 +16,6 @@ type ContinueData =
 
 type IScrapperDispatcherActor =
   inherit IActor
-  abstract TestStart: data: StartData -> Task<bool>
+  abstract TestStart: data: unit -> Task<bool>
   abstract Start: data: StartData -> Task<bool>
   abstract Continue: data: ContinueData -> Task<bool>

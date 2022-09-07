@@ -18,4 +18,4 @@ type TestData =
 type IScrapperStoreActor =
   inherit IActor
   abstract Store: data: ContinueSuccessData -> Task<bool>
-  abstract Test: data: ContinueData -> Task<bool>
+  abstract Test: data: unit -> Task<bool>
