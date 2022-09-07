@@ -1,5 +1,7 @@
 ﻿namespace ScrapperStoreActor
 
+open Elasticsearch.Net
+
 [<AutoOpen>]
 module ScrapperStoreActor =
 
@@ -21,38 +23,55 @@ module ScrapperStoreActor =
     //connectionString, tableName
     connectionString
 
-  let store azureTableConfig (version: string) (data: ContinueSuccessData) =
-    printfn "Store events: %i" data.Result.Events.Length
+  let store azureTableConfig (indexPayload: string) =
+
+    printfn "Store events"
+
+    let client = ElasticLowLevelClient() // settings
+
+    let data = PostData.String(indexPayload)
 
     task {
       try
-
-        let containerName = $"{data.ContractAddress}-{version}".ToLower()
-
-        printfn "container name %s" containerName
-
-        let! blobContainerClient = blobClientOpenCreateIfNotExist (azureTableConfig, containerName)
-
-        let id =
-          data
-            .Result
-            .BlockRange
-            .To
-            .ToString()
-            .PadLeft(15, '0')
-
-        let blobName = $"{id}.json".ToLower()
-
-        printfn "blob name %s" blobName
-
-        let! _ = BlobOperators.writeString blobContainerClient blobName data.Result.Events
-
-        printfn "Store events success"
+        let! response = client.BulkAsync<VoidResponse> data
+        printfn "success !!! %b %O" response.Success response.OriginalException
+        return ()
       with
-      | _ as err -> printfn "Store events error %O" err
+      | _ as err ->
+        printfn "error %O %O !!!!" err err.InnerException
+        return raise err
 
-      return ()
     }
+
+  //task {
+  //  //try
+
+  //  //  let containerName = $"{data.ContractAddress}-{version}".ToLower()
+
+  //  //  printfn "container name %s" containerName
+
+  //  //  let! blobContainerClient = blobClientOpenCreateIfNotExist (azureTableConfig, containerName)
+
+  //  //  let id =
+  //  //    data
+  //  //      .Result
+  //  //      .BlockRange
+  //  //      .To
+  //  //      .ToString()
+  //  //      .PadLeft(15, '0')
+
+  //  //  let blobName = $"{id}.json".ToLower()
+
+  //  //  printfn "blob name %s" blobName
+
+  //  //  let! _ = BlobOperators.writeString blobContainerClient blobName data.Result.Events
+
+  //  //  printfn "Store events success"
+  //  //with
+  //  //| _ as err -> printfn "Store events error %O" err
+
+  //  return ()
+  //}
 
   let runScrapperDispatcher (proxyFactory: Client.IActorProxyFactory) id (data: ContinueSuccessData) =
     let actor =
@@ -63,7 +82,10 @@ module ScrapperStoreActor =
     let continueData: ContinueData =
       { ContractAddress = data.ContractAddress
         Abi = data.Abi
-        Result = (Ok success) }
+        Result =
+          (Ok
+            { BlockRange = success.BlockRange
+              RequestBlockRange = success.RequestBlockRange }) }
 
     actor.Continue continueData |> ignore
 
@@ -77,24 +99,24 @@ module ScrapperStoreActor =
         task {
           let id = this.Id.ToString()
           let azureTableConfig = getAzureBlobConfig config
-          do! store azureTableConfig id data
+          do! store () data.Result.IndexPayload
           runScrapperDispatcher this.ProxyFactory this.Id data
           return true
         }
 
-      member this.Test() =
-        task {
-          let id = this.Id.ToString()
-          let azureBlobConfig = getAzureBlobConfig config
+//member this.Test() =
+//  task {
+//    let id = this.Id.ToString()
+//    let azureBlobConfig = getAzureBlobConfig config
 
-          let _data: ContinueSuccessData =
-            { ContractAddress = "test"
-              Abi = "abi"
-              Result =
-                { RequestBlockRange = { From = None; To = None }
-                  BlockRange = { From = 0u; To = 0u }
-                  Events = "events" } }
+//    let _data: ContinueSuccessData =
+//      { ContractAddress = "test"
+//        Abi = "abi"
+//        Result =
+//          { RequestBlockRange = { From = None; To = None }
+//            BlockRange = { From = 0u; To = 0u }
+//            Events = "events" } }
 
-          do! store azureBlobConfig id _data
-          return true
-        }
+//    do! store azureBlobConfig id _data
+//    return true
+//  }

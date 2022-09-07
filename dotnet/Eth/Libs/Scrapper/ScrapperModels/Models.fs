@@ -7,8 +7,7 @@ type BlockRange = { From: uint; To: uint }
 type RequestBlockRange = { From: uint option; To: uint option }
 
 type Success =
-  { Events: string
-    RequestBlockRange: RequestBlockRange
+  { RequestBlockRange: RequestBlockRange
     BlockRange: BlockRange }
 
 type ErrorData =

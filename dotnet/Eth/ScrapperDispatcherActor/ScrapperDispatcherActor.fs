@@ -72,7 +72,7 @@ module ScrapperDispatcherActor =
           //        BlockRange = { From = 0u; To = 0u } }
           //      |> Ok }
 
-          actor.Test () |> ignore
+          //actor.Test () |> ignore
           return true
         }
 

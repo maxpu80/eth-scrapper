@@ -19,9 +19,10 @@ export interface Data {
 }
 
 export interface Entry {
-  data: string;
+  data: JSON;
   event: string;
   block: number;
+  index: number;
 }
 
 export interface BlockRange {
@@ -56,13 +57,11 @@ function read(contract: any, fromBlock: number, toBlock: number) {
 }
 
 const cleanupEventValues = (vals: any) =>
-  JSON.stringify(
     _.fromPairs(
       _.keys(vals)
         .filter((f: any) => _.isNaN(+f))
-        .map((k: any) => [k, String(vals[k])])
+        .map((k: any) => [k, vals[k]])
     )
-  );
 
 // https://ethereum.stackexchange.com/questions/54967/how-to-get-only-past-2-days-events-using-getpastevents-everytime
 export const handle = async (data: Data): Promise<Result> => {
@@ -83,6 +82,7 @@ export const handle = async (data: Data): Promise<Result> => {
       data: cleanupEventValues(m.returnValues),
       event: m.event,
       block: m.blockNumber,
+      index: m.logIndex
     })) as Entry[];
 
     if (events.length > 0) {

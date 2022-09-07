@@ -1,6 +1,7 @@
 import { AbstractActor } from "@dapr/dapr";
 import axios from "axios";
-import { Data as HandlerData, Error, handle, Result, Success } from "./handler";
+import { Data as HandlerData, Entry, Error, handle, Result, Success } from "./handler";
+const _ = require("lodash");
 
 //
 
@@ -20,11 +21,21 @@ const mapRequestBlockRange = (range: RequestBlockRange) => ({
   to: range.to ? { Some: [range.to] } : null,
 });
 
-const mapPublishResultSuccess = (requestBlockRange: RequestBlockRange, result: Success) => {
+const mapEntry = (entry: Entry) => {
+  return { __event: entry.event, __block: entry.block, __index: entry.index, ...entry.data };
+};
+
+const mapPublishResultSuccess = (indexId: string, requestBlockRange: RequestBlockRange, result: Success) => {
+  const events = result.events.map((evt) => {
+    const meta = JSON.stringify({ create: { _index: indexId, _id: `${evt.block}_${evt.index}` } });
+    const data = JSON.stringify(mapEntry(evt));
+    return [meta, data].join("\n");
+  });
+  const eventsElasticPayload = events.join("\n") + "\n";
   return {
     Ok: [
       {
-        events: JSON.stringify(result.events),
+        indexPayload: eventsElasticPayload,
         blockRange: result.blockRange,
         requestBlockRange: mapRequestBlockRange(requestBlockRange),
       },
@@ -54,21 +65,13 @@ const mapPublishResultError = (requestBlockRange: RequestBlockRange, result: Err
   };
 };
 
-const mapPublishResult = (requestBlockRange: RequestBlockRange, result: Result) => {
+const mapPublishResult = (indexId: string, requestBlockRange: RequestBlockRange, result: Result) => {
   switch (result.kind) {
     case "Success":
-      return mapPublishResultSuccess(requestBlockRange, result);
+      return mapPublishResultSuccess(indexId, requestBlockRange, result);
     case "Error":
       return mapPublishResultError(requestBlockRange, result);
   }
-};
-
-const mapPublishPayload = (data: Data, result: Result) => {
-  return {
-    contractAddress: data.contractAddress,
-    abi: data.abi,
-    result: mapPublishResult(data.blockRange, result),
-  };
 };
 
 export interface IScrapperActor {
@@ -79,7 +82,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
   private async invokeActor(actorType: string, actorMethod: string, payload: any) {
     const client = this.getDaprClient();
 
-    let actorId = this.getActorId().getId();
+    const actorId = this.getActorId().getId();
 
     const url = `${client.daprHost}:${client.daprPort}/v1.0/actors/${actorType}/${actorId}/method/${actorMethod}`;
 
@@ -88,26 +91,28 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     return payload;
   }
 
+  private mapPublishPayload(data: Data, result: Result) {
+    const actorId = this.getActorId().getId();
+    const indexId = `${data.contractAddress}_${actorId}`.toLowerCase();
+    return {
+      contractAddress: data.contractAddress,
+      abi: data.abi,
+      result: mapPublishResult(indexId, data.blockRange, result),
+    };
+  }
+
   private async publishError(data: Data, result: Result) {
-    const payload = mapPublishPayload(data, result);
+    const payload = this.mapPublishPayload(data, result);
 
     return this.invokeActor("scrapper-dispatcher", "Continue", payload);
   }
 
   private async publishSuccess(data: Data, result: Success) {
-    /*
-    const payload = {
-      events: result.events,
-      blockRange: result.blockRange,
-      requestBlockRange: mapRequestBlockRange(data.blockRange),
-    };
-    */
-    const _payload = mapPublishPayload(data, result);
+    const _payload = this.mapPublishPayload(data, result);
     const payload = {
       ..._payload,
-      result: (_payload.result as any).Ok[0]
-    }
-
+      result: (_payload.result as any).Ok[0],
+    };
 
     return this.invokeActor("scrapper-store", "Store", payload);
   }
