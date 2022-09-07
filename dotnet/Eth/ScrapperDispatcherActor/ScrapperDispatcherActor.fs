@@ -58,6 +58,27 @@ module ScrapperDispatcherActor =
     inherit Actor(host)
 
     interface IScrapperDispatcherActor with
+      member this.TestStart data =
+        task {
+          let actor =
+            this.ProxyFactory.CreateActorProxy<IScrapperStoreActor>(this.Id, "scrapper-store")
+
+          let data: ContinueData =
+            { ContractAddress = "test"
+              Abi = "test"
+              Result =
+                { Events =
+                    [ { Event = "test"
+                        Block = 1u
+                        Data = "test" } ]
+                  RequestBlockRange = { From = None; To = None }
+                  BlockRange = { From = 0u; To = 0u } }
+                |> Ok }
+
+          actor.Test data |> ignore
+          return true
+        }
+
       member this.Start data =
         task {
 

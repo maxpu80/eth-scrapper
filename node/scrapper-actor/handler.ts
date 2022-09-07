@@ -4,8 +4,7 @@ const _ = require("lodash");
 // const PROVIDER_URL =
 //   "https://rinkeby.infura.io/v3/11f741ef96ad4ce5b963ea0ba8d9703b";
 
-const PROVIDER_URL =
-  "https://mainnet.infura.io/v3/11f741ef96ad4ce5b963ea0ba8d9703b";
+const PROVIDER_URL = "https://mainnet.infura.io/v3/11f741ef96ad4ce5b963ea0ba8d9703b";
 
 const provider = PROVIDER_URL;
 
@@ -20,7 +19,7 @@ export interface Data {
 }
 
 export interface Entry {
-  data: JSON;
+  data: string;
   event: string;
   block: number;
 }
@@ -57,10 +56,12 @@ function read(contract: any, fromBlock: number, toBlock: number) {
 }
 
 const cleanupEventValues = (vals: any) =>
-  _.fromPairs(
-    _.keys(vals)
-      .filter((f: any) => _.isNaN(+f))
-      .map((k: any) => [k, vals[k]])
+  JSON.stringify(
+    _.fromPairs(
+      _.keys(vals)
+        .filter((f: any) => _.isNaN(+f))
+        .map((k: any) => [k, String(vals[k])])
+    )
   );
 
 // https://ethereum.stackexchange.com/questions/54967/how-to-get-only-past-2-days-events-using-getpastevents-everytime
@@ -68,7 +69,6 @@ export const handle = async (data: Data): Promise<Result> => {
   const fromBlock = data.blockRange.from || 0;
   const toBlock = data.blockRange.to || (await web3.eth.getBlockNumber());
 
-  
   const blockRange = {
     from: fromBlock,
     to: toBlock,

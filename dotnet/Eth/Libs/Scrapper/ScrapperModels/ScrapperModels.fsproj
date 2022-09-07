@@ -7,7 +7,8 @@
 
   <ItemGroup>
     <Compile Include="Models.fs" />
-    <Compile Include="Actors.fs" />
+    <Compile Include="IScrapperDispatcherActor.fs" />
+    <Compile Include="IScrapperStoreActor.fs" />
   </ItemGroup>
 
   <ItemGroup>

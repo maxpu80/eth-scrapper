@@ -76,18 +76,49 @@ export interface IScrapperActor {
 }
 
 export default class ScrapperActor extends AbstractActor implements IScrapperActor {
-  private async publish(data: Data, result: Result) {
+  private async invokeActor(actorType: string, actorMethod: string, payload: any) {
     const client = this.getDaprClient();
 
     let actorId = this.getActorId().getId();
 
-    const url = `${client.daprHost}:${client.daprPort}/v1.0/actors/scrapper-dispatcher/${actorId}/method/Continue`;
-
-    const payload = mapPublishPayload(data, result);
+    const url = `${client.daprHost}:${client.daprPort}/v1.0/actors/${actorType}/${actorId}/method/${actorMethod}`;
 
     await axios.put(url, payload);
 
     return payload;
+  }
+
+  private async publishError(data: Data, result: Result) {
+    const payload = mapPublishPayload(data, result);
+
+    return this.invokeActor("scrapper-dispatcher", "Continue", payload);
+  }
+
+  private async publishSuccess(data: Data, result: Success) {
+    /*
+    const payload = {
+      events: result.events,
+      blockRange: result.blockRange,
+      requestBlockRange: mapRequestBlockRange(data.blockRange),
+    };
+    */
+    const _payload = mapPublishPayload(data, result);
+    const payload = {
+      ..._payload,
+      result: (_payload.result as any).Ok[0]
+    }
+
+
+    return this.invokeActor("scrapper-store", "Store", payload);
+  }
+
+  private async publish(data: Data, result: Result) {
+    switch (result.kind) {
+      case "Success":
+        return this.publishSuccess(data, result);
+      case "Error":
+        return this.publishError(data, result);
+    }
   }
 
   async scrap(data: Data) {
@@ -102,9 +133,12 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     };
 
     const result = await handle(handlerData);
+
     console.log("scrapper::scrap::result", result.blockRange, result.kind === "Success" ? "Success" : result.error);
 
     const publishedResult = await this.publish(data, result);
+
+    console.log("scrapper::scrap::publish", publishedResult.contractAddress);
 
     return publishedResult;
   }
