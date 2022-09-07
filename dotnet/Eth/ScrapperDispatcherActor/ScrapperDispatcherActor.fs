@@ -67,10 +67,7 @@ module ScrapperDispatcherActor =
             { ContractAddress = "test"
               Abi = "test"
               Result =
-                { Events =
-                    [ { Event = "test"
-                        Block = 1u
-                        Data = "test" } ]
+                { Events = "[]"
                   RequestBlockRange = { From = None; To = None }
                   BlockRange = { From = 0u; To = 0u } }
                 |> Ok }

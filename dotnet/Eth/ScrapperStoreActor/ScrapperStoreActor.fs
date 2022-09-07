@@ -18,14 +18,12 @@ module ScrapperStoreActor =
     let actor =
       proxyFactory.CreateActorProxy<IScrapperDispatcherActor>(id, "scrapper-dispatcher")
 
-    let success = { data.Result with Events = [] }
+    let success = data.Result
 
     let continueData: ContinueData =
       { ContractAddress = data.ContractAddress
         Abi = data.Abi
         Result = (Ok success) }
-
-    printfn "dispatch !!! %O" data
 
     actor.Continue continueData |> ignore
 

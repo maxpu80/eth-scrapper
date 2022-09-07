@@ -24,7 +24,7 @@ const mapPublishResultSuccess = (requestBlockRange: RequestBlockRange, result: S
   return {
     Ok: [
       {
-        events: result.events,
+        events: JSON.stringify(result.events),
         blockRange: result.blockRange,
         requestBlockRange: mapRequestBlockRange(requestBlockRange),
       },

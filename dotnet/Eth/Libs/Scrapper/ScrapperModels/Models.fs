@@ -2,17 +2,12 @@
 
 open System.Runtime.Serialization
 
-type EventData =
-  { Event: string
-    Block: uint
-    Data: string }
-
 type BlockRange = { From: uint; To: uint }
 
 type RequestBlockRange = { From: uint option; To: uint option }
 
 type Success =
-  { Events: EventData list
+  { Events: string
     RequestBlockRange: RequestBlockRange
     BlockRange: BlockRange }
 
