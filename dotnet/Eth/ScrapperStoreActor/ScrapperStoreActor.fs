@@ -1,7 +1,5 @@
 ﻿namespace ScrapperStoreActor
 
-open Microsoft.Extensions.Configuration
-
 [<AutoOpen>]
 module ScrapperStoreActor =
 
@@ -10,6 +8,7 @@ module ScrapperStoreActor =
   open System.Threading.Tasks
   open ScrapperModels
   open Infra.AzureBlob
+  open Microsoft.Extensions.Configuration
 
   let getAzureBlobConfig (config: IConfiguration) =
     let connectionString = config.GetConnectionString("AzureBlob")
@@ -45,7 +44,7 @@ module ScrapperStoreActor =
         let blobName = $"{id}.json".ToLower()
 
         printfn "blob name %s" blobName
-        
+
         let! _ = BlobOperators.writeString blobContainerClient blobName data.Result.Events
 
         printfn "Store events success"
@@ -83,7 +82,7 @@ module ScrapperStoreActor =
           return true
         }
 
-      member this.Test () =
+      member this.Test() =
         task {
           let id = this.Id.ToString()
           let azureBlobConfig = getAzureBlobConfig config
