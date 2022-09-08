@@ -82,7 +82,8 @@ export const handle = async (data: Data): Promise<Result> => {
       data: cleanupEventValues(m.returnValues),
       event: m.event,
       block: m.blockNumber,
-      index: m.logIndex
+      index: m.logIndex,
+      date: m.
     })) as Entry[];
 
     if (events.length > 0) {

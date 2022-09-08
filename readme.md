@@ -6,6 +6,12 @@ https://www.elastic.co/guide/en/elasticsearch/reference/current/run-elasticsearc
 Digest: sha256:061c2797184203f78f6809e5853196f0769f528b4e2fe06b73c8c63e146b1e49
 
 ```
+docker start elasticsearch
+docker start kibana
+
+```
+
+```
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -> Elasticsearch security features have been automatically configured!
