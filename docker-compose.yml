@@ -3,6 +3,10 @@ services:
   placement:
     image: "daprio/dapr:1.8.0"
     command: ["./placement", "-port", "50006"]
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6380:6379"
   # seq:
   #   image: datalust/seq
   #   environment:
@@ -17,10 +21,6 @@ services:
   #   - "5411:9411"
   #   networks:
   #     - dapr-net 
-  redis:
-    image: "redis:alpine"
-    ports:
-      - "6380:6379"
   # elasticsearch:
   #   image: "elasticsearch:7.17.6"
   #   ports:      
