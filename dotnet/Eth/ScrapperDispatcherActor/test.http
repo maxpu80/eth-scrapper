@@ -1,12 +1,8 @@
-@host=http://localhost:3501
+@host=http://localhost:3500
 
 ###
 
-PUT {{host}}/v1.0/actors/scrapper-dispatcher/01-11/method/TestStart
-
-###
-
-PUT {{host}}/v1.0/actors/scrapper-dispatcher/test-4/method/State
+PUT {{host}}/v1.0/actors/scrapper-dispatcher/v5/method/State
 
 {}
 

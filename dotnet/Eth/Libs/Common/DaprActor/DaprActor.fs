@@ -49,7 +49,7 @@ module DaprActor =
     app.UseEndpoints(fun endpoints -> endpoints.MapActorsHandlers() |> ignore)
     |> ignore
 
-    let port = System.Environment.GetEnvironmentVariable("Port")
+    let port = System.Environment.GetEnvironmentVariable("PORT")
 
     let url = $"http://*:{port}"
 

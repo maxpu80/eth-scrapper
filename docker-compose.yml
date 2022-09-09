@@ -1,0 +1,70 @@
+version: '3'
+services:
+  placement:
+    image: "daprio/dapr"
+    command: ["./placement", "-port", "50006"]
+  # seq:
+  #   image: datalust/seq
+  #   environment:
+  #     - ACCEPT_EULA=Y
+  #   ports:
+  #     - "5340:80"
+  #   networks:
+  #     - dapr-net 
+  # zipkin:
+  #   image: openzipkin/zipkin-slim
+  #   ports:
+  #   - "5411:9411"
+  #   networks:
+  #     - dapr-net 
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6380:6379"
+  # elasticsearch:
+  #   image: "elasticsearch:7.17.6"
+  #   ports:      
+  #     - 9200:9200
+  #     - 9300:9300
+  #   environment:
+  #     - xpack.security.enabled=false
+  #     - discovery.type=single-node
+  #   volumes:
+  #     - ./.elasticsearch-data:/usr/share/elasticsearch/data      
+  # kibana:
+  #   image: "kibana:7.17.6"
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200     
+  #   ports:      
+  #     - 5601:5601
+  #   depends_on:
+  #     - elasticsearch    
+  ############################
+  # docker-dispatcher-actor + Dapr sidecar
+  ############################
+  scrapper-dispatcher-actor:
+    build: 
+      context: ./dotnet/Eth
+      dockerfile: ScrapperDispatcherActor/Dockerfile         
+    ports:
+      - "3000:3000"
+    environment: 
+      - PORT=3000
+    depends_on:
+      - redis
+      - placement
+  scrapper-dispatcher-actor-dapr:
+    image: "daprio/daprd"
+    command: ["./daprd",
+     "-app-id", "scrapper-dispatcher-actor",
+     "-app-port", "3000",
+     "-dapr-http-port", "3500",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./docker-compose-components/:/components"
+    depends_on:
+      - scrapper-dispatcher-actor
+    #network_mode: "service:scrapper-dispatcher-actor"
+    ports:
+      - "3500:3500"
