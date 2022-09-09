@@ -34,6 +34,9 @@ module ScrapperStoreActor =
           response.OriginalException
         )
 
+        if not response.Success then
+          raise response.OriginalException
+
         return ()
       with
       | _ as err ->
