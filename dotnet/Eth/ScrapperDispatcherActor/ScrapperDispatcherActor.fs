@@ -9,6 +9,7 @@ module ScrapperDispatcherActor =
   open ScrapperModels
   open Microsoft.Extensions.Logging
   open Common.DaprActor
+  open System
 
   type BlockRangeDTO =
     { From: System.Nullable<uint>
@@ -84,11 +85,12 @@ module ScrapperDispatcherActor =
 
             logger.LogDebug("Run scrapper with @{data}", scrapperRequest)
 
-            //do! runScrapper this.ProxyFactory this.Id scrapperRequest
+            do! runScrapper this.ProxyFactory this.Id scrapperRequest
 
             let state: State =
               { Status = Status.Continue
-                Request = scrapperRequest }
+                Request = scrapperRequest
+                Date = DateTime.UtcNow }
 
             do! stateManager.Set state
 
@@ -96,24 +98,79 @@ module ScrapperDispatcherActor =
         }
 
       member this.Continue data =
+        logger.LogDebug("Continue with {@data}", data)
+
+        let blockRange = nextBlockRangeCalc data.Result
+
+        let scrapperRequest: ScrapperRequest =
+          { ContractAddress = data.ContractAddress
+            Abi = data.Abi
+            BlockRange = blockRange }
+
         match checkStop data.Result with
         | false ->
           task {
-            let blockRange = nextBlockRangeCalc data.Result
-
-            let scrapperRequest: ScrapperRequest =
-              { ContractAddress = data.ContractAddress
-                Abi = data.Abi
-                BlockRange = blockRange }
+            logger.LogDebug("Stop check is false, continue", scrapperRequest)
 
             do! runScrapper this.ProxyFactory this.Id scrapperRequest
 
+            let state: State =
+              { Status = Status.Continue
+                Request = scrapperRequest
+                Date = DateTime.UtcNow }
+
+            do! stateManager.Set state
+
             return true
           }
-        | true -> task { return false }
+        | true ->
+          task {
+            logger.LogWarning("Stop check is true, finish")
+
+            let state: State =
+              { Status = Status.Finish
+                Request = scrapperRequest
+                Date = DateTime.UtcNow }
+
+            do! stateManager.Set state
+
+            return false
+          }
 
 
-      member this.Pause() = task { return true }
-      member this.Resume() = task { return true }
-      member this.State() = task { return None }
-      member this.Reset() = task { return true }
+      member this.Pause() =
+        task {
+          let! state = stateManager.Get()
+
+          match state with
+          | Some state when state.Status = Status.Continue ->
+            let state =
+              { state with
+                  Status = Status.Pause
+                  Date = DateTime.UtcNow }
+
+            do! stateManager.Set state
+            return true
+          | _ -> return false
+
+        }
+
+      member this.Resume() =
+        task {
+          let! state = stateManager.Get()
+
+          match state with
+          | Some state when state.Status = Status.Pause ->
+            let state =
+              { state with
+                  Status = Status.Continue
+                  Date = DateTime.UtcNow }
+
+            do! stateManager.Set state
+            return true
+          | _ -> return false
+
+        }
+
+      member this.State() = stateManager.Get()
+      member this.Reset() = stateManager.Remove()

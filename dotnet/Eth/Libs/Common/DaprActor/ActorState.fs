@@ -4,7 +4,7 @@
 module ActorState =
   open Dapr.Actors.Runtime
 
-  let getState<'a> (name: string) (stateManager: IActorStateManager) () =
+  let getState<'a> (name: string) (stateManager: IActorStateManager) =
     task {
       let! result = stateManager.TryGetStateAsync<'a> name
 
@@ -17,6 +17,9 @@ module ActorState =
   let setState<'a> (name: string) (stateManager: IActorStateManager) (state: 'a) =
     stateManager.SetStateAsync(name, state)
 
+  let removeState (name: string) (stateManager: IActorStateManager) = stateManager.TryRemoveStateAsync(name)
+
   let stateManager<'a> (name: string) (stateManager: IActorStateManager) =
-    {| Get = getState<'a> name stateManager
-       Set = setState<'a> name stateManager |}
+    {| Get = fun () -> getState<'a> name stateManager
+       Set = setState<'a> name stateManager
+       Remove = fun () -> removeState name stateManager |}

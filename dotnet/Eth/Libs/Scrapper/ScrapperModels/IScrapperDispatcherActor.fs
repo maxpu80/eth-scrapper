@@ -16,10 +16,12 @@ type ContinueData =
 type Status =
   | Continue
   | Pause
+  | Finish
 
 type State =
   { Status: Status
-    Request: ScrapperRequest }
+    Request: ScrapperRequest
+    Date: System.DateTime }
 
 type IScrapperDispatcherActor =
   inherit IActor
