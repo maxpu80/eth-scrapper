@@ -1,7 +1,7 @@
 version: '3'
 services:
   placement:
-    image: "daprio/dapr"
+    image: "daprio/dapr:1.8.0"
     command: ["./placement", "-port", "50006"]
   # seq:
   #   image: datalust/seq
@@ -46,15 +46,15 @@ services:
     build: 
       context: ./dotnet/Eth
       dockerfile: ScrapperDispatcherActor/Dockerfile         
-    ports:
-      - "3000:3000"
+    # ports:
+    #   - "3000:3000"
     environment: 
       - PORT=3000
     depends_on:
       - redis
       - placement
   scrapper-dispatcher-actor-dapr:
-    image: "daprio/daprd"
+    image: "daprio/daprd:1.8.0"
     command: ["./daprd",
      "-app-id", "scrapper-dispatcher-actor",
      "-app-port", "3000",
