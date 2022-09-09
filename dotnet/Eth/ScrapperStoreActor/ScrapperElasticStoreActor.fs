@@ -5,22 +5,21 @@ module ScrapperStoreActor =
 
   open Dapr.Actors
   open Dapr.Actors.Runtime
-  open System.Threading.Tasks
   open ScrapperModels
-  open Infra.AzureBlob
   open Microsoft.Extensions.Configuration
   open Elasticsearch.Net
   open Microsoft.Extensions.Logging
+  open Common.DaprActor
 
   let elasticConfig (config: IConfiguration) =
     let connectionString = config.GetConnectionString("ElasticSearch")
     connectionString
 
-  let store (logger: ILogger) elasticConfig (indexPayload: string) =
+  let store (logger: ILogger) (elasticConfig: string) (indexPayload: string) =
 
-    logger.LogDebug("Store scrapper payload to elasticsearch")
+    logger.LogDebug("Store scrapper payload to elasticsearch {config}", elasticConfig)
 
-    use elasticConfig = new ConnectionConfiguration(System.Uri(elasticConfig))
+    let elasticConfig = new ConnectionConfiguration(System.Uri(elasticConfig))
     let client = ElasticLowLevelClient(elasticConfig)
 
     let data = PostData.String(indexPayload)
@@ -30,7 +29,7 @@ module ScrapperStoreActor =
         let! response = client.BulkAsync<VoidResponse> data
 
         logger.LogInformation(
-          "Store scrapper payload to elasticsearch success {success} @{error}",
+          "Store scrapper payload to elasticsearch success {success} {@error}",
           response.Success,
           response.OriginalException
         )
@@ -38,7 +37,7 @@ module ScrapperStoreActor =
         return ()
       with
       | _ as err ->
-        logger.LogError("Store scrapper payload to elasticsearch error @{error}", err)
+        logger.LogError("Store scrapper payload to elasticsearch error {@error}", err)
         return raise err
 
     }
@@ -60,14 +59,13 @@ module ScrapperStoreActor =
     actor.Continue continueData |> ignore
 
 
-  [<Actor(TypeName = "scrapper-store")>]
+  [<Actor(TypeName = "scrapper-elastic-store")>]
   type ScrapperElasticStoreActor(host: ActorHost, config: IConfiguration) =
     inherit Actor(host)
+    let logger = ActorLogging.create host
 
     interface IScrapperStoreActor with
       member this.Store data =
-        let logger = this.Host.LoggerFactory.CreateLogger()
-
         task {
           let config = elasticConfig config
           do! store logger config data.Result.IndexPayload

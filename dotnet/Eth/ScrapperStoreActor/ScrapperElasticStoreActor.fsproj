@@ -18,7 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Libs\Common\AzureBlob\AzureBlob.fsproj" />
+		<ProjectReference Include="..\Libs\Common\DaprActor\DaprActor.fsproj" />
 		<ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />
 	</ItemGroup>
 

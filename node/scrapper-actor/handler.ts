@@ -57,11 +57,11 @@ function read(contract: any, fromBlock: number, toBlock: number) {
 }
 
 const cleanupEventValues = (vals: any) =>
-    _.fromPairs(
-      _.keys(vals)
-        .filter((f: any) => _.isNaN(+f))
-        .map((k: any) => [k, vals[k]])
-    )
+  _.fromPairs(
+    _.keys(vals)
+      .filter((f: any) => _.isNaN(+f))
+      .map((k: any) => [k, vals[k]])
+  );
 
 // https://ethereum.stackexchange.com/questions/54967/how-to-get-only-past-2-days-events-using-getpastevents-everytime
 export const handle = async (data: Data): Promise<Result> => {
@@ -83,7 +83,6 @@ export const handle = async (data: Data): Promise<Result> => {
       event: m.event,
       block: m.blockNumber,
       index: m.logIndex,
-      date: m.
     })) as Entry[];
 
     if (events.length > 0) {

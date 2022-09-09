@@ -22,7 +22,7 @@ const mapRequestBlockRange = (range: RequestBlockRange) => ({
 });
 
 const mapEntry = (entry: Entry) => {
-  return { __event: entry.event, __block: entry.block, __index: entry.index, ...entry.data };
+  return { chain_event: entry.event, chain_block: entry.block, chain_index: entry.index, ...entry.data };
 };
 
 const mapPublishResultSuccess = (indexId: string, requestBlockRange: RequestBlockRange, result: Success) => {
@@ -114,7 +114,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
       result: (_payload.result as any).Ok[0],
     };
 
-    return this.invokeActor("scrapper-store", "Store", payload);
+    return this.invokeActor("scrapper-elastic-store", "Store", payload);
   }
 
   private async publish(data: Data, result: Result) {
