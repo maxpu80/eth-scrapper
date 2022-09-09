@@ -85,7 +85,8 @@ module ScrapperDispatcherActor =
             let state: State =
               { Status = Status.Continue
                 Request = scrapperRequest
-                Date = epoch () }
+                Date = epoch ()
+                FinishDate = None }
 
             do! stateManager.Set state
 
@@ -115,12 +116,20 @@ module ScrapperDispatcherActor =
 
               logger.LogDebug("Stop check is false, continue", scrapperRequest)
 
+              let finishDate =
+                match state with
+                | Some state -> state.FinishDate
+                | None ->
+                  logger.LogWarning("Continue, but state not found")
+                  None
+
               do! runScrapper this.ProxyFactory this.Id scrapperRequest
 
               let state: State =
                 { Status = Status.Continue
                   Request = scrapperRequest
-                  Date = epoch () }
+                  Date = epoch ()
+                  FinishDate = finishDate }
 
               do! stateManager.Set state
 
@@ -133,7 +142,8 @@ module ScrapperDispatcherActor =
               let state: State =
                 { Status = Status.Finish
                   Request = scrapperRequest
-                  Date = epoch () }
+                  Date = epoch ()
+                  FinishDate = epoch () |> Some }
 
               do! stateManager.Set state
 
@@ -164,7 +174,10 @@ module ScrapperDispatcherActor =
           let! state = stateManager.Get()
 
           match state with
-          | Some state when state.Status = Status.Pause ->
+          | Some state when
+            state.Status = Status.Pause
+            || state.Status = Status.Finish
+            ->
             let state =
               { state with
                   Status = Status.Continue
@@ -176,7 +189,9 @@ module ScrapperDispatcherActor =
 
             do! stateManager.Set state
             return true
-          | _ -> return false
+          | _ ->
+            logger.LogWarning("Resume state not found")
+            return false
 
         }
 

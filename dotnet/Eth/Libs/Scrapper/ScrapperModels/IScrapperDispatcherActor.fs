@@ -22,7 +22,8 @@ type Status =
 type State =
   { Status: Status
     Request: ScrapperRequest
-    Date: int64 }
+    Date: int64
+    FinishDate: int64 option }
 
 type IScrapperDispatcherActor =
   inherit IActor
