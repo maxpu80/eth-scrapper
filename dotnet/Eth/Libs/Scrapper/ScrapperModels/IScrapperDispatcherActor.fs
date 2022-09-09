@@ -2,6 +2,7 @@
 
 open Dapr.Actors
 open System.Threading.Tasks
+open Common.DaprActor.ActorResult
 
 type StartData =
   { ContractAddress: string
@@ -21,7 +22,7 @@ type Status =
 type State =
   { Status: Status
     Request: ScrapperRequest
-    Date: System.DateTime }
+    Date: int64 }
 
 type IScrapperDispatcherActor =
   inherit IActor
@@ -29,5 +30,5 @@ type IScrapperDispatcherActor =
   abstract Continue: data: ContinueData -> Task<bool>
   abstract Pause: unit -> Task<bool>
   abstract Resume: unit -> Task<bool>
-  abstract State: unit -> Task<State option>
+  abstract State: unit -> Task<ActorOptionResult<State>>
   abstract Reset: unit -> Task<bool>

@@ -46,15 +46,10 @@ module ScrapperDispatcherActor =
 
 
   let private runScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
-    task {
+    let dto = scrapperRequest |> toDTO
 
-      let actor = proxyFactory.Create(actorId, "ScrapperActor")
+    invokeActor<ScrapperRequestDTO, Result> proxyFactory actorId "ScrapperActor" "scrap" dto
 
-      let dto = scrapperRequest |> toDTO
-
-      actor.InvokeMethodAsync<ScrapperRequestDTO, Result>("scrap", dto)
-      |> ignore
-    }
 
   let private STATE_NAME = "state"
 
@@ -90,7 +85,7 @@ module ScrapperDispatcherActor =
             let state: State =
               { Status = Status.Continue
                 Request = scrapperRequest
-                Date = DateTime.UtcNow }
+                Date = epoch () }
 
             do! stateManager.Set state
 
@@ -100,42 +95,51 @@ module ScrapperDispatcherActor =
       member this.Continue data =
         logger.LogDebug("Continue with {@data}", data)
 
-        let blockRange = nextBlockRangeCalc data.Result
+        task {
+          let! state = stateManager.Get()
 
-        let scrapperRequest: ScrapperRequest =
-          { ContractAddress = data.ContractAddress
-            Abi = data.Abi
-            BlockRange = blockRange }
-
-        match checkStop data.Result with
-        | false ->
-          task {
-            logger.LogDebug("Stop check is false, continue", scrapperRequest)
-
-            do! runScrapper this.ProxyFactory this.Id scrapperRequest
-
-            let state: State =
-              { Status = Status.Continue
-                Request = scrapperRequest
-                Date = DateTime.UtcNow }
-
-            do! stateManager.Set state
-
-            return true
-          }
-        | true ->
-          task {
-            logger.LogWarning("Stop check is true, finish")
-
-            let state: State =
-              { Status = Status.Finish
-                Request = scrapperRequest
-                Date = DateTime.UtcNow }
-
-            do! stateManager.Set state
-
+          match state with
+          | Some state when state.Status = Status.Pause ->
+            logger.LogWarning("Actor in paused state, skip continue")
             return false
-          }
+          | _ ->
+            let blockRange = nextBlockRangeCalc data.Result
+
+            let scrapperRequest: ScrapperRequest =
+              { ContractAddress = data.ContractAddress
+                Abi = data.Abi
+                BlockRange = blockRange }
+
+            match checkStop data.Result with
+            | false ->
+
+              logger.LogDebug("Stop check is false, continue", scrapperRequest)
+
+              do! runScrapper this.ProxyFactory this.Id scrapperRequest
+
+              let state: State =
+                { Status = Status.Continue
+                  Request = scrapperRequest
+                  Date = epoch () }
+
+              do! stateManager.Set state
+
+              return true
+
+            | true ->
+
+              logger.LogInformation("Stop check is true, finish")
+
+              let state: State =
+                { Status = Status.Finish
+                  Request = scrapperRequest
+                  Date = epoch () }
+
+              do! stateManager.Set state
+
+              return false
+        }
+
 
 
       member this.Pause() =
@@ -147,7 +151,7 @@ module ScrapperDispatcherActor =
             let state =
               { state with
                   Status = Status.Pause
-                  Date = DateTime.UtcNow }
+                  Date = epoch () }
 
             do! stateManager.Set state
             return true
@@ -164,7 +168,11 @@ module ScrapperDispatcherActor =
             let state =
               { state with
                   Status = Status.Continue
-                  Date = DateTime.UtcNow }
+                  Date = epoch () }
+
+            logger.LogInformation("Resume with {@state}", state)
+
+            do! runScrapper this.ProxyFactory this.Id state.Request
 
             do! stateManager.Set state
             return true
@@ -172,5 +180,8 @@ module ScrapperDispatcherActor =
 
         }
 
-      member this.State() = stateManager.Get()
+      member this.State() =
+        stateManager.Get()
+        |> ActorResult.toActorOptionResult
+
       member this.Reset() = stateManager.Remove()

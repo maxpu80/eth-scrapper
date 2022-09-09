@@ -20,15 +20,5 @@ module DaprLogging =
         .Enrich.FromLogContext()
         .Enrich.WithSpan()
 
-    //let elasticHost = configuration.GetConnectionString("ElasticHostLogger")
-    //let seqHost = configuration.GetConnectionString("SeqHostLogger")
-
-    //if String.IsNullOrEmpty(elasticHost) |> not then
-    //  logger <- logger.WriteTo.Elasticsearch(ElasticsearchSinkOptions(Uri elasticHost))
-
-    //printfn "!!! %s" seqHost
-    //if String.IsNullOrEmpty(seqHost) |> not then
-    //  logger <- logger.WriteTo.Seq(seqHost)
-
     Log.Logger <- logger.CreateLogger()
     webHostBuilder.UseSerilog()
