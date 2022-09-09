@@ -6,6 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Include="ActorState.fs" />
 		<Compile Include="ActorLogging.fs" />
 		<Compile Include="DaprLogging.fs" />
 		<Compile Include="DaprActor.fs" />

@@ -1,4 +1,4 @@
-﻿namespace Common.Dapr
+﻿namespace Common.DaprActor
 
 [<RequireQualifiedAccess>]
 module ActorLogging =

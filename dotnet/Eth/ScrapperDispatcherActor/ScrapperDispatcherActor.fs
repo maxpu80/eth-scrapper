@@ -8,7 +8,7 @@ module ScrapperDispatcherActor =
   open System.Threading.Tasks
   open ScrapperModels
   open Microsoft.Extensions.Logging
-  open Common.Dapr
+  open Common.DaprActor
 
   type BlockRangeDTO =
     { From: System.Nullable<uint>
@@ -58,9 +58,10 @@ module ScrapperDispatcherActor =
   let private STATE_NAME = "state"
 
   [<Actor(TypeName = "scrapper-dispatcher")>]
-  type ScrapperDispatcherActor(host: ActorHost) =
+  type ScrapperDispatcherActor(host: ActorHost) as this =
     inherit Actor(host)
     let logger = ActorLogging.create host
+    let stateManager = stateManager<State> STATE_NAME this.StateManager
 
     interface IScrapperDispatcherActor with
       member this.Start data =
@@ -69,13 +70,13 @@ module ScrapperDispatcherActor =
 
         task {
 
-          let! state = this.StateManager.TryGetStateAsync<State>(STATE_NAME)
+          let! state = stateManager.Get()
 
-          match state.HasValue with
-          | true ->
+          match state with
+          | Some _ ->
             logger.LogError("Try to start version which already started", data)
             return false
-          | false ->
+          | None ->
             let scrapperRequest: ScrapperRequest =
               { ContractAddress = data.ContractAddress
                 Abi = data.Abi
@@ -89,8 +90,7 @@ module ScrapperDispatcherActor =
               { Status = Status.Continue
                 Request = scrapperRequest }
 
-            do! this.StateManager.SetStateAsync(STATE_NAME, state)
-
+            do! stateManager.Set state
 
             return true
         }
