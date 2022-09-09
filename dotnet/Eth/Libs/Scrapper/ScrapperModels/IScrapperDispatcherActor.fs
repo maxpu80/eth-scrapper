@@ -18,6 +18,7 @@ type Status =
   | Continue
   | Pause
   | Finish
+  | Schedule
 
 type State =
   { Status: Status
@@ -33,3 +34,4 @@ type IScrapperDispatcherActor =
   abstract Resume: unit -> Task<bool>
   abstract State: unit -> Task<ActorOptionResult<State>>
   abstract Reset: unit -> Task<bool>
+  abstract Schedule: unit -> Task<bool>

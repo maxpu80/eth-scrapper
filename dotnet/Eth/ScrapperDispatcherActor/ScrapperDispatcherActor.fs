@@ -52,6 +52,7 @@ module ScrapperDispatcherActor =
 
 
   let private STATE_NAME = "state"
+  let private SCHEDULE_TIMER_NAME = "timer"
 
   [<Actor(TypeName = "scrapper-dispatcher")>]
   type ScrapperDispatcherActor(host: ActorHost) as this =
@@ -95,6 +96,7 @@ module ScrapperDispatcherActor =
 
       member this.Continue data =
         logger.LogDebug("Continue with {@data}", data)
+        let me = this :> IScrapperDispatcherActor
 
         task {
           let! state = stateManager.Get()
@@ -147,9 +149,10 @@ module ScrapperDispatcherActor =
 
               do! stateManager.Set state
 
+              let! _ = me.Schedule()
+
               return false
         }
-
 
 
       member this.Pause() =
@@ -157,7 +160,10 @@ module ScrapperDispatcherActor =
           let! state = stateManager.Get()
 
           match state with
-          | Some state when state.Status = Status.Continue ->
+          | Some state when
+            state.Status = Status.Continue
+            || state.Status = Status.Schedule
+            ->
             let state =
               { state with
                   Status = Status.Pause
@@ -178,19 +184,20 @@ module ScrapperDispatcherActor =
             state.Status = Status.Pause
             || state.Status = Status.Finish
             ->
-            let state =
+
+            let updatedState =
               { state with
                   Status = Status.Continue
                   Date = epoch () }
 
-            logger.LogInformation("Resume with {@state}", state)
+            logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
 
-            do! runScrapper this.ProxyFactory this.Id state.Request
+            do! runScrapper this.ProxyFactory this.Id updatedState.Request
 
-            do! stateManager.Set state
+            do! stateManager.Set updatedState
             return true
           | _ ->
-            logger.LogWarning("Resume state not found")
+            logger.LogWarning("Resume state not found or Continue")
             return false
 
         }
@@ -200,3 +207,30 @@ module ScrapperDispatcherActor =
         |> ActorResult.toActorOptionResult
 
       member this.Reset() = stateManager.Remove()
+
+      member this.Schedule() =
+        let dueTime = 60.
+        logger.LogInformation("Try schedule {dueTime}", dueTime)
+
+        task {
+          let! state = stateManager.Get()
+
+          match state with
+          | Some state when state.Status = Status.Finish ->
+            logger.LogInformation("Run schedule with {@state}", state)
+
+            let updatedState =
+              { state with
+                  Status = Status.Schedule
+                  Date = epoch () }
+
+            do! stateManager.Set updatedState
+
+            let! _ =
+              this.RegisterTimerAsync(SCHEDULE_TIMER_NAME, "Resume", [||], TimeSpan.FromSeconds(dueTime), TimeSpan.Zero)
+
+            return true
+          | _ as state ->
+            logger.LogWarning("Can't schedule, wrong state {@state}", state)
+            return false
+        }
