@@ -6,7 +6,7 @@
 
 	<ItemGroup>
 		<None Include="readme.md" />
-		<Compile Include="ScrapperStoreActor.fs" />
+		<Compile Include="ScrapperElasticStoreActor.fs" />
 		<Compile Include="Program.fs" />
 	</ItemGroup>
 

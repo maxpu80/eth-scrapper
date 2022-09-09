@@ -5,7 +5,7 @@ VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperDispatcherActor", "ScrapperDispatcherActor\ScrapperDispatcherActor.fsproj", "{0260D4FF-EDAA-419B-9245-54B01D6F491E}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperStoreActor", "ScrapperStoreActor\ScrapperStoreActor.fsproj", "{72B44938-E5B9-4EED-B6BC-6A779F7A4F44}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperElasticStoreActor", "ScrapperStoreActor\ScrapperElasticStoreActor.fsproj", "{72B44938-E5B9-4EED-B6BC-6A779F7A4F44}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperModels", "Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj", "{E947F499-D423-4DBE-9CC2-44D6A6903D9C}"
 EndProject
@@ -13,7 +13,9 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AzureTable", "Libs\Common\A
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AzureBlob", "Libs\Common\AzureBlob\AzureBlob.fsproj", "{8D1E1C4F-96ED-4017-9CDA-249DDC91CC0A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "StoreReaderActor", "StoreReaderActor\StoreReaderActor.fsproj", "{95CF3B3B-F5EC-4D17-9CB4-F63F61057357}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "StoreReaderActor", "StoreReaderActor\StoreReaderActor.fsproj", "{95CF3B3B-F5EC-4D17-9CB4-F63F61057357}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DaprActor", "Libs\Common\DaprActor\DaprActor.fsproj", "{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{95CF3B3B-F5EC-4D17-9CB4-F63F61057357}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95CF3B3B-F5EC-4D17-9CB4-F63F61057357}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95CF3B3B-F5EC-4D17-9CB4-F63F61057357}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

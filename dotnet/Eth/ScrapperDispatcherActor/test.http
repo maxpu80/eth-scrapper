@@ -6,7 +6,7 @@ PUT {{host}}/v1.0/actors/scrapper-dispatcher/01-11/method/TestStart
 
 
 ### USDT
-PUT {{host}}/v1.0/actors/scrapper-dispatcher/2/method/Start
+PUT {{host}}/v1.0/actors/scrapper-dispatcher/test-1/method/Start
 
 {
   "contractAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",  

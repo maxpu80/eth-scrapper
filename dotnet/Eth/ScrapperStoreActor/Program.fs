@@ -1,4 +1,4 @@
-namespace ScrapperStoreActor
+namespace ScrapperElasticStoreActor
 
 #nowarn "20"
 
@@ -37,7 +37,7 @@ module Program =
       opts.JsonSerializerOptions.PropertyNameCaseInsensitive <- true
       opts.JsonSerializerOptions.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
       opts.JsonSerializerOptions.Converters.Add(converter)
-      opts.Actors.RegisterActor<ScrapperStoreActor>())
+      opts.Actors.RegisterActor<ScrapperElasticStoreActor>())
    
     let app = builder.Build()
 

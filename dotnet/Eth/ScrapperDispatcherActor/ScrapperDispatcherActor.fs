@@ -7,6 +7,8 @@ module ScrapperDispatcherActor =
   open Dapr.Actors.Runtime
   open System.Threading.Tasks
   open ScrapperModels
+  open Microsoft.Extensions.Logging
+  open Common.Dapr
 
   type BlockRangeDTO =
     { From: System.Nullable<uint>
@@ -53,40 +55,44 @@ module ScrapperDispatcherActor =
       |> ignore
     }
 
+  let private STATE_NAME = "state"
+
   [<Actor(TypeName = "scrapper-dispatcher")>]
   type ScrapperDispatcherActor(host: ActorHost) =
     inherit Actor(host)
+    let logger = ActorLogging.create host
 
     interface IScrapperDispatcherActor with
-      member this.TestStart () =
-        task {
-          let actor =
-            this.ProxyFactory.CreateActorProxy<IScrapperStoreActor>(this.Id, "scrapper-store")
-
-          //let data: ContinueData =
-          //  { ContractAddress = "test"
-          //    Abi = "test"
-          //    Result =
-          //      { Events = "[]"
-          //        RequestBlockRange = { From = None; To = None }
-          //        BlockRange = { From = 0u; To = 0u } }
-          //      |> Ok }
-
-          //actor.Test () |> ignore
-          return true
-        }
-
       member this.Start data =
+
+        logger.LogDebug("Start with {@data}", data)
+
         task {
 
-          let scrapperRequest: ScrapperRequest =
-            { ContractAddress = data.ContractAddress
-              Abi = data.Abi
-              BlockRange = { From = None; To = None } }
+          let! state = this.StateManager.TryGetStateAsync<State>(STATE_NAME)
 
-          do! runScrapper this.ProxyFactory this.Id scrapperRequest
+          match state.HasValue with
+          | true ->
+            logger.LogError("Try to start version which already started", data)
+            return false
+          | false ->
+            let scrapperRequest: ScrapperRequest =
+              { ContractAddress = data.ContractAddress
+                Abi = data.Abi
+                BlockRange = { From = None; To = None } }
 
-          return true
+            logger.LogDebug("Run scrapper with @{data}", scrapperRequest)
+
+            //do! runScrapper this.ProxyFactory this.Id scrapperRequest
+
+            let state: State =
+              { Status = Status.Continue
+                Request = scrapperRequest }
+
+            do! this.StateManager.SetStateAsync(STATE_NAME, state)
+
+
+            return true
         }
 
       member this.Continue data =
@@ -105,3 +111,9 @@ module ScrapperDispatcherActor =
             return true
           }
         | true -> task { return false }
+
+
+      member this.Pause() = task { return true }
+      member this.Resume() = task { return true }
+      member this.State() = task { return None }
+      member this.Reset() = task { return true }
