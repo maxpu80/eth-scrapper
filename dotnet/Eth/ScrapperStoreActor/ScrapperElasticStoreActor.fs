@@ -38,7 +38,7 @@ module ScrapperStoreActor =
       with
       | _ as err ->
         logger.LogError("Store scrapper payload to elasticsearch error {@error}", err)
-        return raise err
+        return ()
 
     }
 
