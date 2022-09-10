@@ -35,7 +35,15 @@ type ProjectVersionssController(env: DaprStoreEnv) =
         | AfterActorStartStateNotFound ->
           return this.StatusCode(500, {| Message = "Actor started but state not found" |})
         | RepoError err -> return mapRepoError err
-      | Ok result -> return this.AcceptedAtAction("state", result) :> IActionResult
+      | Ok result ->
+        return
+          this.AcceptedAtAction(
+            "State",
+            {| ProjectId = projectId
+               VersionId = versionId |},
+            result
+          )
+          :> IActionResult
     }
 
   [<HttpGet("{versionId}/state")>]
@@ -47,3 +55,15 @@ type ProjectVersionssController(env: DaprStoreEnv) =
       | Some result -> return result |> this.Ok :> IActionResult
       | None -> return NotFoundObjectResult() :> IActionResult
     }
+
+  [<HttpPost("{versionId}/pause")>]
+  member this.Pause(projectId: string, versionId: string) =
+    ScrapperDispatcherProxy.pause projectId versionId
+
+  [<HttpPost("{versionId}/resume")>]
+  member this.Resume(projectId: string, versionId: string) =
+    ScrapperDispatcherProxy.resume projectId versionId
+
+  [<HttpPost("{versionId}/reset")>]
+  member this.Reset(projectId: string, versionId: string) =
+    ScrapperDispatcherProxy.reset projectId versionId

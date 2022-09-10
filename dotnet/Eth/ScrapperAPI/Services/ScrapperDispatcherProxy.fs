@@ -24,6 +24,24 @@ module ScrapperDispatcherProxy =
 
     actor.State()
 
+  let pause contractAddress versionId =
+
+    let actor = createActor contractAddress versionId
+
+    actor.Pause()
+
+  let resume contractAddress versionId =
+
+    let actor = createActor contractAddress versionId
+
+    actor.Resume()
+
+  let reset contractAddress versionId =
+
+    let actor = createActor contractAddress versionId
+
+    actor.Reset()
+
   type StartError =
     | ActorStartFailure
     | AfterActorStartStateNotFound
@@ -38,7 +56,7 @@ module ScrapperDispatcherProxy =
 
       match result with
       | Ok (proj, ver) ->
-        let actor = createActor proj.Address ver.Id
+        let actor = createActor projectId ver.Id
 
         let data: StartData =
           { ContractAddress = proj.Address
@@ -48,7 +66,7 @@ module ScrapperDispatcherProxy =
 
         match result with
         | true ->
-          let! result = state proj.Address ver.Id
+          let! result = state projectId ver.Id
 
           match result.Data with
           | Some state -> return Ok state

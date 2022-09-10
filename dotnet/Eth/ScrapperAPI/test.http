@@ -20,17 +20,6 @@ dapr-app-id: {{appId}}
 
 DELETE {{host}}/projects/1
 dapr-app-id: {{appId}}
-
-###
-
-PUT {{host}}/projects/2
-dapr-app-id: {{appId}}
-
-{ "id": "1",
-  "name": "test",
-  "address": "xxx",
-  "abi": "zzz" }
-
 ###
 
 GET {{host}}/projects/1/versions
@@ -42,20 +31,34 @@ POST {{host}}/projects/1/versions
 dapr-app-id: {{appId}}
 
 {
-  "id": "v1"
+  "id": "v3"
 }
 
 ###
 
-DELETE  {{host}}/projects/1/versions/v1
+DELETE  {{host}}/projects/1/versions/v3
 dapr-app-id: {{appId}}
 
 ###
 
-POST {{host}}/projects/1/versions/v1/start
+POST {{host}}/projects/1/versions/v3/start
 dapr-app-id: {{appId}}
 
 
 ###
-GET {{host}}/projects/1/versions/v1/state
+GET {{host}}/projects/1/versions/v3/state
+dapr-app-id: {{appId}}
+
+###
+POST {{host}}/projects/1/versions/v3/pause
+dapr-app-id: {{appId}}
+
+
+###
+POST {{host}}/projects/1/versions/v3/resume
+dapr-app-id: {{appId}}
+
+
+###
+POST {{host}}/projects/1/versions/v3/reset
 dapr-app-id: {{appId}}
