@@ -11,4 +11,4 @@ Steps to reproduce
 "errorCode":"ERR_ACTOR_RUNTIME_NOT_FOUND"
 
 
-At the same time it works when service started using dapr cli see how to start `dotnet\Eth\ScrapperDispatcherActor\readme.md` run to check `curl http://localhost:3500/v1.0/actors/scrapper-dispatcher/v5/method/State`
+At the same time it works when service started using dapr cli see how to start `dotnet\Eth\ScrapperDispatcherActor\readme.md` run to check `curl http://localhost:3501/v1.0/actors/scrapper-dispatcher/v5/method/State`
