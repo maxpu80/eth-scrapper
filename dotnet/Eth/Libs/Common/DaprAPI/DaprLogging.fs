@@ -1,10 +1,9 @@
 ﻿namespace Common.DaprAPI
 
-open Microsoft.Extensions.Hosting
-
 [<AutoOpen>]
 module DaprLogging =
-
+  
+  open Microsoft.Extensions.Hosting
   open Microsoft.Extensions.Configuration
   open Microsoft.AspNetCore.Hosting
   open System

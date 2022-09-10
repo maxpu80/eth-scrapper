@@ -42,23 +42,50 @@ services:
   ############################
   # docker-dispatcher-actor + Dapr sidecar
   ############################
-  scrapper-dispatcher-actor:
+  # scrapper-dispatcher-actor:
+  #   build: 
+  #     context: ./dotnet/Eth
+  #     dockerfile: ScrapperDispatcherActor/Dockerfile         
+  #   # ports:
+  #   #   - "3000:3000"
+  #   environment: 
+  #     - PORT=3000
+  #   depends_on:
+  #     - redis
+  #     - placement
+  # scrapper-dispatcher-actor-dapr:
+  #   image: "daprio/daprd:1.8.0"
+  #   command: ["./daprd",
+  #    "-app-id", "scrapper-dispatcher-actor",
+  #    "-app-port", "3000",
+  #    "-dapr-http-port", "3500",
+  #    "-placement-host-address", "placement:50006",
+  #    "-components-path", "/components"]
+  #   volumes:
+  #       - "./docker-compose-components/:/components"
+  #   depends_on:
+  #     - scrapper-dispatcher-actor
+  #   #network_mode: "service:scrapper-dispatcher-actor"
+  #   ports:
+  #     - "3500:3500"
+  ############################
+  # docker-scrapper-api + Dapr sidecar
+  ############################
+  scrapper-api:
     build: 
       context: ./dotnet/Eth
-      dockerfile: ScrapperDispatcherActor/Dockerfile         
-    # ports:
-    #   - "3000:3000"
+      dockerfile: ScrapperAPI/Dockerfile         
     environment: 
-      - PORT=3000
+      - PORT=3001
     depends_on:
       - redis
       - placement
-  scrapper-dispatcher-actor-dapr:
+  scrapper-api-dapr:
     image: "daprio/daprd:1.8.0"
     command: ["./daprd",
-     "-app-id", "scrapper-dispatcher-actor",
-     "-app-port", "3000",
-     "-dapr-http-port", "3500",
+     "-app-id", "scrapper-api",
+     "-app-port", "3001",
+     "-dapr-http-port", "3501",
      "-placement-host-address", "placement:50006",
      "-components-path", "/components"]
     volumes:
@@ -67,4 +94,4 @@ services:
       - scrapper-dispatcher-actor
     #network_mode: "service:scrapper-dispatcher-actor"
     ports:
-      - "3500:3500"
+      - "3501:3501"
