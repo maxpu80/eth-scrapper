@@ -2,7 +2,7 @@
 
 module PeojectsRepo =
   open Common.DaprState.StateList
-  open Common.Repo.RepoResult
+  open Common.Repo
 
   type ProjectEntity =
     { Id: string
@@ -16,12 +16,31 @@ module PeojectsRepo =
 
   let createRepo env =
     let repo = stateListRepo<ProjectEntity> env
+    let versionRepo = ProjectVersionsRepo.createRepo env
+
+    let getOne projId =
+      repo.GetHead USER_KEY (fun x -> x.Id = projId)
 
     {| Create =
         fun enty ->
           repo.Insert USER_KEY (fun x -> x.Id = enty.Id) enty
           |> taskMap errorToConflict
-       GetAll = fun () -> repo.GetAll USER_KEY
+       GetAll = fun () -> repo.GetAll USER_KEY |> taskMap Ok
+       GetOneWithVersion =
+        fun projId verId ->
+          task {
+            let! proj = getOne projId
+
+            match proj with
+            | Some proj ->
+              let! ver = versionRepo.GetOne projId verId
+
+              match ver with
+              | Some ver -> return Some(proj, ver)
+              | None -> return None
+            | None -> return None
+          }
+          |> taskMap noneToNotFound
        Update =
         fun id enty ->
           repo.Update USER_KEY (fun enty -> enty.Id = id) (fun _ -> enty)
@@ -32,8 +51,19 @@ module PeojectsRepo =
             let! result = repo.Delete USER_KEY (fun enty -> enty.Id = id)
 
             match result with
-            | Some _ -> do! ((ProjectVersionsRepo.createRepo env).DeleteAll id)
+            | Some _ -> do! versionRepo.DeleteAll id
             | None -> ()
 
             return result |> noneToNotFound
-          } |}
+          }
+       CreateVersion =
+        fun id ver ->
+          task {
+            let! proj = getOne id
+
+            match proj with
+            | Some _ -> return! versionRepo.Create id ver
+            | None -> return RepoError.NotFound |> Error
+          }
+       DeleteVersion = fun id verId -> versionRepo.Delete id verId
+       GetAllVersions = fun id -> versionRepo.GetAll id |}

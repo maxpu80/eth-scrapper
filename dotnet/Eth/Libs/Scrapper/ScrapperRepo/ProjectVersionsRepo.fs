@@ -1,12 +1,14 @@
 ﻿namespace Scrapper.Repo
 
-open System
+type CreateVersionEntity = { Id: string }
 
-module ProjectVersionsRepo =
+type VersionEntity =
+  { Id: string
+    Created: System.DateTime }
+
+module internal ProjectVersionsRepo =
   open Common.DaprState.StateList
   open Common.Repo.RepoResult
-
-  type VersionEntity = { Id: string; Created: DateTime }
 
   let getKey projId = $"project_{projId}_versions"
 
@@ -14,10 +16,15 @@ module ProjectVersionsRepo =
     let repo = stateListRepo<VersionEntity> env
 
     {| Create =
-        fun projId enty ->
-          repo.Insert (getKey projId) (fun x -> x.Id = enty.Id) enty
+        fun projId (ver: CreateVersionEntity) ->
+          repo.Insert
+            (getKey projId)
+            (fun x -> x.Id = ver.Id)
+            { Id = ver.Id
+              Created = System.DateTime.UtcNow }
           |> taskMap errorToConflict
-       GetAll = fun projId -> repo.GetAll(getKey projId)
+       GetAll = fun projId -> repo.GetAll(getKey projId) |> taskMap Ok
+       GetOne = fun projId verId -> repo.GetHead (getKey projId) (fun enty -> enty.Id = verId)
        Delete =
         fun projId id ->
           repo.Delete (getKey projId) (fun enty -> enty.Id = id)
