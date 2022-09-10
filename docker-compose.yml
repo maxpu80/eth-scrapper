@@ -12,15 +12,14 @@ services:
       - "6380:6379"
     networks:
       - dapr-net
-
-  # seq:
-  #   image: datalust/seq
-  #   environment:
-  #     - ACCEPT_EULA=Y
-  #   ports:
-  #     - "5340:80"
-  #   networks:
-  #     - dapr-net 
+  seq:
+    image: datalust/seq
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - "5340:80"
+    networks:
+      - dapr-net 
   # zipkin:
   #   image: openzipkin/zipkin-slim
   #   ports:
@@ -57,6 +56,7 @@ services:
     depends_on:
       - redis
       - placement
+      - seq
     networks:
       - dapr-net
   scrapper-dispatcher-actor-dapr:
@@ -85,6 +85,7 @@ services:
     depends_on:
       - redis
       - placement
+      - seq
     networks:
       - dapr-net
   scrapper-api-dapr:
