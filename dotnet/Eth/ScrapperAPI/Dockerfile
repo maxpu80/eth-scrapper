@@ -1,13 +1,16 @@
 ARG NET_IMAGE=6.0-bullseye-slim
 
 FROM mcr.microsoft.com/dotnet/aspnet:${NET_IMAGE} AS base
-ARG PORT=3000
+ARG PORT
+RUN echo ${PORT}
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:${NET_IMAGE} AS build
 WORKDIR /src
 
-COPY ["Libs/Commo/DaprAPI/", "Libs/Commo/DaprAPI/"]
+COPY ["Libs/Common/Repo/", "Libs/Common/Repo/"]
+COPY ["Libs/Common/DaprActor/", "Libs/Common/DaprActor/"]
+COPY ["Libs/Common/DaprAPI/", "Libs/Common/DaprAPI/"]
 COPY ["Libs/Common/DaprState/", "Libs/Common/DaprState/"]
 COPY ["Libs/Scrapper/ScrapperModels/", "Libs/Scrapper/ScrapperModels/"]
 COPY ["Libs/Scrapper/ScrapperRepo/", "Libs/Scrapper/ScrapperRepo/"]
