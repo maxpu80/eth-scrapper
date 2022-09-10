@@ -1,25 +1,14 @@
-`
-./k8s/build-all.ps1
-`
+# Actor state bug when used inside docker-compose
 
-## Run
+https://github.com/dapr/dapr/issues/4891
 
+Steps to reproduce
 
-`docker network create eth-scrapper-dapr-network`
++ `dapr init` if still not
++ `docker-compose up`
++ `curl http://localhost:3500/v1.0/actors/scrapper-dispatcher/v5/method/State` or use `dotnet\Eth\ScrapperDispatcherActor\test.http` file
 
-## Local Env
-
-beware cloudfront cache errors for russia
-
-https://www.elastic.co/guide/en/elasticsearch/reference/current/run-elasticsearch-locally.html
+"errorCode":"ERR_ACTOR_RUNTIME_NOT_FOUND"
 
 
-
-```
-docker start elasticsearch
-docker start kibana
-
-```
-```
-https://github.com/dotnet/tye/blob/main/docs/recipes/dapr.md
-```
+At the same time it works when service started using dapr cli see how to start `dotnet\Eth\ScrapperDispatcherActor\readme.md` run to check `curl http://localhost:3500/v1.0/actors/scrapper-dispatcher/v5/method/State`

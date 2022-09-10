@@ -6,39 +6,7 @@ services:
   redis:
     image: "redis:alpine"
     ports:
-      - "6380:6379"
-  # seq:
-  #   image: datalust/seq
-  #   environment:
-  #     - ACCEPT_EULA=Y
-  #   ports:
-  #     - "5340:80"
-  #   networks:
-  #     - dapr-net 
-  # zipkin:
-  #   image: openzipkin/zipkin-slim
-  #   ports:
-  #   - "5411:9411"
-  #   networks:
-  #     - dapr-net 
-  # elasticsearch:
-  #   image: "elasticsearch:7.17.6"
-  #   ports:      
-  #     - 9200:9200
-  #     - 9300:9300
-  #   environment:
-  #     - xpack.security.enabled=false
-  #     - discovery.type=single-node
-  #   volumes:
-  #     - ./.elasticsearch-data:/usr/share/elasticsearch/data      
-  # kibana:
-  #   image: "kibana:7.17.6"
-  #   environment:
-  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200     
-  #   ports:      
-  #     - 5601:5601
-  #   depends_on:
-  #     - elasticsearch    
+      - "6380:6379"  
   ############################
   # docker-dispatcher-actor + Dapr sidecar
   ############################
@@ -65,6 +33,5 @@ services:
         - "./docker-compose-components/:/components"
     depends_on:
       - scrapper-dispatcher-actor
-    #network_mode: "service:scrapper-dispatcher-actor"
     ports:
       - "3500:3500"
