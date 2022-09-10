@@ -8,23 +8,32 @@ module RepoResultFilter =
   open Microsoft.FSharp.Reflection
   open Microsoft.AspNetCore.Mvc.Filters
 
-  let private mapRepoError =
+  let mapRepoError =
     function
-    | NotFound -> () |> NotFoundObjectResult :> ActionResult
-    | Frobidden -> () |> ForbidResult :> ActionResult
-    | Conflict err -> err |> ConflictObjectResult :> ActionResult
+    | NotFound -> () |> NotFoundObjectResult :> IActionResult
+    | Frobidden -> () |> ForbidResult :> IActionResult
+    | Conflict err -> err |> ConflictObjectResult :> IActionResult
+    | Unexpected _ -> 500 |> StatusCodeResult :> IActionResult
 
   let private mapActionResult (actionResult: IActionResult) =
     let objectResult = actionResult |> box :?> ObjectResult
     let objectResultValue = objectResult.Value
 
-    match FSharpValue.GetUnionFields(objectResultValue, objectResultValue.GetType()) with
-    | x, vals when x.Name = "Error" ->
-      match vals[0] with
-      | :? RepoError as err -> err |> mapRepoError
-      | _ -> 500 |> StatusCodeResult :> ActionResult
-    | x, vals when x.Name = "Ok" -> vals[0] |> OkObjectResult :> ActionResult
-    | _, vals -> vals |> OkObjectResult :> ActionResult
+    try
+      match FSharpValue.GetUnionFields(objectResultValue, objectResultValue.GetType()) with
+      | x, vals when x.Name = "Error" ->
+        match vals[0] with
+        | :? RepoError as err -> err |> mapRepoError
+        | _ -> 500 |> StatusCodeResult :> IActionResult
+      | x, vals when x.Name = "Ok" -> vals[0] |> OkObjectResult :> IActionResult
+      | _, vals -> vals |> OkObjectResult :> IActionResult
+    with
+    | _ as err ->
+      printfn "%O" actionResult
+      printfn "========================="
+      printfn "%O" err
+      actionResult
+
 
   type RepoResultFilter() =
     interface IAsyncResultFilter with

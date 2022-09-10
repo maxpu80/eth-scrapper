@@ -23,7 +23,7 @@ dapr-app-id: {{appId}}
 
 ###
 
-PUT {{host}}/projects/1
+PUT {{host}}/projects/2
 dapr-app-id: {{appId}}
 
 { "id": "1",
@@ -50,3 +50,12 @@ dapr-app-id: {{appId}}
 DELETE  {{host}}/projects/1/versions/v1
 dapr-app-id: {{appId}}
 
+###
+
+POST {{host}}/projects/1/versions/v1/start
+dapr-app-id: {{appId}}
+
+
+###
+GET {{host}}/projects/1/versions/v1/state
+dapr-app-id: {{appId}}

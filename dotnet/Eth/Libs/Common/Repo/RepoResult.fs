@@ -6,6 +6,7 @@ type RepoError =
   | NotFound
   | Frobidden
   | Conflict of obj
+  | Unexpected of string
 
 type RepoResult'<'a> = Result<'a, RepoError>
 type RepoResult<'a> = Task<RepoResult'<'a>>

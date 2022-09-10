@@ -1,14 +1,12 @@
 ﻿namespace ScrapperAPI.Controllers
 
 open Microsoft.AspNetCore.Mvc
-open Microsoft.Extensions.Logging
-open Microsoft.AspNetCore.Authorization
 open Common.DaprState
 open Scrapper.Repo
 open Scrapper.Repo.PeojectsRepo
 open ScrapperAPI.Services
-open Common.DaprActor.ActorResult
-
+open ScrapperDispatcherProxy
+open Common.DaprAPI
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
@@ -28,14 +26,24 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   [<HttpPost("{versionId}/start")>]
   member this.Start(projectId: string, versionId: string) =
     task {
-      let! result = repo.GetOneWithVersion projectId versionId
+      let! result = ScrapperDispatcherProxy.start env projectId versionId
 
       match result with
-      | Ok (proj, ver) ->
-        let! result = ScrapperDispatcherProxy.start proj.Address proj.Abi ver.Id
+      | Error err ->
+        match err with
+        | ActorStartFailure -> return this.StatusCode(500, {| Message = "Actor start failure" |}) :> IActionResult
+        | AfterActorStartStateNotFound ->
+          return this.StatusCode(500, {| Message = "Actor started but state not found" |})
+        | RepoError err -> return mapRepoError err
+      | Ok result -> return this.AcceptedAtAction("state", result) :> IActionResult
+    }
 
-        match result with
-        | true -> return! ScrapperDispatcherProxy.state proj.Address ver.Id
-        | false -> return actorOptionResultNone
-      | _ as err -> return actorOptionResultNone
+  [<HttpGet("{versionId}/state")>]
+  member this.State(projectId: string, versionId: string) =
+    task {
+      let! result = ScrapperDispatcherProxy.state projectId versionId
+
+      match result.Data with
+      | Some result -> return result |> this.Ok :> IActionResult
+      | None -> return NotFoundObjectResult() :> IActionResult
     }
