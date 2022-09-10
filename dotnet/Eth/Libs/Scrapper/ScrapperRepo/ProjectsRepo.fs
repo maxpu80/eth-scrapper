@@ -16,5 +16,5 @@ module PeojectsRepo =
   let createRepo env =
     let repo = stateListRepo<ProjectEntity> env
 
-    {| Create = fun enty -> repo.Set USER_KEY enty
+    {| Create = fun enty -> repo.Insert USER_KEY (fun x -> x.Id = enty.Id) enty
        GetAll = fun () -> repo.GetAll USER_KEY |}

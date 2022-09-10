@@ -4,10 +4,7 @@
 module StateList =
 
   open State
-
-  let updateOrCreateStateList<'a> env id (entity: 'a) =
-    tryUpdateOrCreateStateAsync env id (fun _ -> [ entity ]) (fun data -> entity :: data)
-
+  open System.Threading.Tasks
 
   let getStateList<'a> env id =
     task {
@@ -28,6 +25,18 @@ module StateList =
         | Some list -> list |> List.filter fn |> List.tryHead
         | None -> None
     }
+
+  let insertStateList<'a> env id fn (entity: 'a) =
+
+    tryUpdateOrCreateStateAsync env id (function
+      | Some data ->
+        let head = data |> List.tryFind fn
+
+        match head with
+        | Some _ -> None
+        | None -> entity :: data |> Some
+      | None -> None)
+
 
   let private toOptList =
     function
@@ -59,9 +68,8 @@ module StateList =
       | None -> return None
     }
 
-
   let stateListRepo<'a when 'a: equality> env =
-    {| Set = updateOrCreateStateList<'a> env
+    {| Insert = insertStateList<'a> env
        GetAll = getStateList<'a> env
        GetHead = getStateListHead<'a> env
        Delete = deleteStateList<'a> env

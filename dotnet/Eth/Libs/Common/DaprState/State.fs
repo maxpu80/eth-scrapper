@@ -50,7 +50,7 @@ module State =
 
   /// Find item and update it if exists
   /// If item is not exists then create new and then update it
-  let tryUpdateOrCreateStateAsync<'a> { App = app; StoreName = storeName } id createFun (updateFun: 'a -> 'a) =
+  let tryUpdateOrCreateStateAsync<'a> { App = app; StoreName = storeName } id (updateFun: 'a option -> 'a option) =
     task {
       let! docEntry = app.Dapr.GetStateEntryAsync<'a>(storeName, id)
 
@@ -58,24 +58,29 @@ module State =
         match box docEntry.Value with
         | null ->
           // document still not created
-          (NEW_ETAG, createFun id)
-        | _ -> (docEntry.ETag, docEntry.Value)
+          (NEW_ETAG, updateFun None)
+        | _ -> (docEntry.ETag, updateFun (Some docEntry.Value))
 
-      let doc = updateFun doc
+      match doc with
+      | Some doc ->
+        let! res = app.Dapr.TrySaveStateAsync(storeName, id, doc, etag)
 
-      let! res = app.Dapr.TrySaveStateAsync(storeName, id, doc, etag)
+        let res =
+          { IsSuccess = res
+            ETag = etag
+            Id = id
+            Doc = doc }
 
-      let res =
-        { IsSuccess = res
-          ETag = etag
-          Id = id
-          Doc = doc }
+        match res.IsSuccess with
+        | true ->
+          app.Logger.LogTrace("{stateStore} document with {docKey} is updated with {result}", storeName, id, "[res]")
+        | false ->
+          app.Logger.LogTrace("{stateStore} document with {docKey} fail to update with {etag}", storeName, id, etag)
 
-      match res.IsSuccess with
-      | true ->
-        app.Logger.LogTrace("{stateStore} document with {docKey} is updated with {result}", storeName, id, "[res]")
-      | false ->
-        app.Logger.LogTrace("{stateStore} document with {docKey} fail to update with {etag}", storeName, id, etag)
+        return Some doc
+      | None ->
+        app.Logger.LogTrace("{stateStore} document with {docKey} update is skipped", storeName, id, "[res]")
+        return None
     }
 
   let tryUpdateStateAsync'<'a> { App = app; StoreName = storeName } id (updateFun: 'a -> 'a option) =

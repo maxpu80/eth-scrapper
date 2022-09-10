@@ -11,7 +11,7 @@ dapr-app-id: {{appId}}
 POST {{host}}/projects
 dapr-app-id: {{appId}}
 
-{ "id": "2",
+{ "id": "3",
   "name": "test",
   "address": "xxx",
   "abi": "yyy" }
