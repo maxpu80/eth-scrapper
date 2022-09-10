@@ -12,7 +12,7 @@ module PeojectsRepo =
 
 
   // TODO : Multi user env
-  let USER_KEY = "projects_USER_KEY"
+  let USER_KEY = "user_USER_KEY_projects"
 
   let createRepo env =
     let repo = stateListRepo<ProjectEntity> env
@@ -28,5 +28,12 @@ module PeojectsRepo =
           |> taskMap noneToNotFound
        Delete =
         fun id ->
-          repo.Delete USER_KEY (fun enty -> enty.Id = id)
-          |> taskMap noneToNotFound |}
+          task {
+            let! result = repo.Delete USER_KEY (fun enty -> enty.Id = id)
+
+            match result with
+            | Some _ -> do! ((ProjectVersionsRepo.createRepo env).DeleteAll id)
+            | None -> ()
+
+            return result |> noneToNotFound
+          } |}

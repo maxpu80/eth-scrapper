@@ -59,6 +59,8 @@ module StateList =
       | None -> return None
     }
 
+  let deleteStateListAll env id = deleteStateAsync env id
+
   let updateStateList<'a> env id (fr: 'a -> bool) mp =
     task {
       let! result =
@@ -78,4 +80,5 @@ module StateList =
        GetAll = getStateList<'a> env
        GetHead = getStateListHead<'a> env
        Delete = deleteStateList<'a> env
-       Update = updateStateList<'a> env |}
+       Update = updateStateList<'a> env
+       DeleteAll = deleteStateListAll env |}

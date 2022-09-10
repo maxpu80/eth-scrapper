@@ -6,30 +6,42 @@
 GET {{host}}/projects
 dapr-app-id: {{appId}}
 
-
-
-
 ###
 
 POST {{host}}/projects
 dapr-app-id: {{appId}}
 
-{ "id": "9",
+{ "id": "1",
   "name": "test",
   "address": "xxx",
   "abi": "yyy" }
 
 ###
 
-DELETE {{host}}/projects/9
+DELETE {{host}}/projects/1
 dapr-app-id: {{appId}}
 
 ###
 
-PUT {{host}}/projects/9
+PUT {{host}}/projects/1
 dapr-app-id: {{appId}}
 
 { "id": "9",
   "name": "test",
   "address": "xxx",
   "abi": "zzz" }
+
+###
+
+GET {{host}}/projects/1/versions
+dapr-app-id: {{appId}}
+
+###
+
+POST {{host}}/projects/1/versions
+dapr-app-id: {{appId}}
+
+{
+  "id": "v1",
+  "name": "v1"  
+}
