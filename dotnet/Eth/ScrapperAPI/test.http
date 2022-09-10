@@ -1,0 +1,17 @@
+@host = http://localhost:3505
+@appId = scrapper-api
+
+###
+
+GET {{host}}/projects
+dapr-app-id: {{appId}}
+
+###
+
+POST {{host}}/projects
+dapr-app-id: {{appId}}
+
+{ "id": "2",
+  "name": "test",
+  "address": "xxx",
+  "abi": "yyy" }

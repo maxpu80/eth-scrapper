@@ -15,7 +15,15 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AzureBlob", "Libs\Common\Az
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "StoreReaderActor", "StoreReaderActor\StoreReaderActor.fsproj", "{95CF3B3B-F5EC-4D17-9CB4-F63F61057357}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DaprActor", "Libs\Common\DaprActor\DaprActor.fsproj", "{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DaprActor", "Libs\Common\DaprActor\DaprActor.fsproj", "{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperAPI", "ScrapperAPI\ScrapperAPI.fsproj", "{F02BB001-5153-4A33-9A68-C4EFE4ADDC83}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "DaprState", "Libs\Common\DaprState\DaprState.fsproj", "{995A17BD-B97B-494C-801D-F7258A6E24CD}"
+EndProject
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperRepo", "Libs\Scrapper\ScrapperRepo\ScrapperRepo.fsproj", "{A3B54AA6-14D5-4398-811B-394FA8FE8009}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "DaprAPI", "Libs\Common\DaprAPI\DaprAPI.fsproj", "{5E0210D7-D684-4C0D-9009-F1F55F20E538}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +59,22 @@ Global
 		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DBF5DA9-5682-4635-8FA4-CCD0E7E3D543}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F02BB001-5153-4A33-9A68-C4EFE4ADDC83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F02BB001-5153-4A33-9A68-C4EFE4ADDC83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F02BB001-5153-4A33-9A68-C4EFE4ADDC83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F02BB001-5153-4A33-9A68-C4EFE4ADDC83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{995A17BD-B97B-494C-801D-F7258A6E24CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{995A17BD-B97B-494C-801D-F7258A6E24CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{995A17BD-B97B-494C-801D-F7258A6E24CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{995A17BD-B97B-494C-801D-F7258A6E24CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3B54AA6-14D5-4398-811B-394FA8FE8009}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3B54AA6-14D5-4398-811B-394FA8FE8009}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3B54AA6-14D5-4398-811B-394FA8FE8009}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3B54AA6-14D5-4398-811B-394FA8FE8009}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E0210D7-D684-4C0D-9009-F1F55F20E538}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E0210D7-D684-4C0D-9009-F1F55F20E538}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E0210D7-D684-4C0D-9009-F1F55F20E538}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E0210D7-D684-4C0D-9009-F1F55F20E538}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
