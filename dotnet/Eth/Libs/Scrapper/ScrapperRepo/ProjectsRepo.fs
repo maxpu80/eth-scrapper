@@ -20,5 +20,5 @@ module PeojectsRepo =
     {| Create =
         fun enty ->
           repo.Insert USER_KEY (fun x -> x.Id = enty.Id) enty
-          |> taskMap noneToConflict
+          |> taskMap errorToConflict
        GetAll = fun () -> repo.GetAll USER_KEY |}

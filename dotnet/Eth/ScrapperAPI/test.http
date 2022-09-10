@@ -6,12 +6,15 @@
 GET {{host}}/projects
 dapr-app-id: {{appId}}
 
+
+
+
 ###
 
 POST {{host}}/projects
 dapr-app-id: {{appId}}
 
-{ "id": "4",
+{ "id": "9",
   "name": "test",
   "address": "xxx",
   "abi": "yyy" }

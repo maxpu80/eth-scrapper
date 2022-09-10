@@ -7,7 +7,6 @@
 
 	<ItemGroup>
 		<Compile Include="RepoResultFilter.fs" />
-		<Compile Include="RepoResult.fs" />
 		<Compile Include="DaprLogging.fs" />
 	</ItemGroup>
 

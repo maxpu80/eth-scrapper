@@ -28,14 +28,19 @@ module StateList =
 
   let insertStateList<'a> env id fn (entity: 'a) =
 
-    tryUpdateOrCreateStateAsync env id (function
-      | Some data ->
-        let head = data |> List.tryFind fn
+    task {
+      let! result =
+        tryUpdateOrCreateStateAsync env id (function
+          | Some data ->
+            let head = data |> List.tryFind fn
 
-        match head with
-        | Some _ -> None
-        | None -> entity :: data |> Some
-      | None -> None)
+            match head with
+            | Some head -> head |> Error
+            | None -> entity :: data |> Ok
+          | None -> Ok [])
+
+      return result |> Result.map (fun _ -> entity)
+    }
 
 
   let private toOptList =

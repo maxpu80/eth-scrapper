@@ -5,11 +5,12 @@ open System.Threading.Tasks
 type RepoError =
   | NotFound
   | Frobidden
-  | Conflict
+  | Conflict of obj
 
 type RepoResult'<'a> = Result<'a, RepoError>
 type RepoResult<'a> = Task<RepoResult'<'a>>
 
+[<AutoOpen>]
 module RepoResult =
 
   let noneTo'<'a> t (opt: 'a option) =
@@ -19,7 +20,10 @@ module RepoResult =
 
   let noneToNotFound<'a> = noneTo'<'a> NotFound
 
-  let noneToConflict<'a> = noneTo'<'a> Conflict
+  let errorToConflict<'a> (result: Result<'a, 'a>) =
+    match result with
+    | Ok x -> Ok x
+    | Error x -> x |> box |> Conflict |> Error
 
   let taskMap fn t =
     task {

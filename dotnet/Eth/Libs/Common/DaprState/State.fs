@@ -50,7 +50,11 @@ module State =
 
   /// Find item and update it if exists
   /// If item is not exists then create new and then update it
-  let tryUpdateOrCreateStateAsync<'a> { App = app; StoreName = storeName } id (updateFun: 'a option -> 'a option) =
+  let tryUpdateOrCreateStateAsync<'a, 'b>
+    { App = app; StoreName = storeName }
+    id
+    (updateFun: 'a option -> Result<'a, 'b>)
+    =
     task {
       let! docEntry = app.Dapr.GetStateEntryAsync<'a>(storeName, id)
 
@@ -62,7 +66,7 @@ module State =
         | _ -> (docEntry.ETag, updateFun (Some docEntry.Value))
 
       match doc with
-      | Some doc ->
+      | Ok doc ->
         let! res = app.Dapr.TrySaveStateAsync(storeName, id, doc, etag)
 
         let res =
@@ -77,10 +81,10 @@ module State =
         | false ->
           app.Logger.LogTrace("{stateStore} document with {docKey} fail to update with {etag}", storeName, id, etag)
 
-        return Some doc
-      | None ->
-        app.Logger.LogTrace("{stateStore} document with {docKey} update is skipped", storeName, id, "[res]")
-        return None
+        return Ok doc
+      | Error err ->
+        app.Logger.LogTrace("{stateStore} document with {docKey} update is skipped due to {@err}", storeName, id, err)
+        return Error err
     }
 
   let tryUpdateStateAsync'<'a> { App = app; StoreName = storeName } id (updateFun: 'a -> 'a option) =

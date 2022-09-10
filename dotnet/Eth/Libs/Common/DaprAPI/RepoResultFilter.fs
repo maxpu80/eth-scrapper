@@ -12,7 +12,7 @@ module RepoResultFilter =
     function
     | NotFound -> () |> NotFoundObjectResult :> ActionResult
     | Frobidden -> () |> ForbidResult :> ActionResult
-    | Conflict -> () |> ConflictObjectResult :> ActionResult
+    | Conflict err -> err |> ConflictObjectResult :> ActionResult
 
   let private mapActionResult (actionResult: IActionResult) =
     let objectResult = actionResult |> box :?> ObjectResult
@@ -23,7 +23,8 @@ module RepoResultFilter =
       match vals[0] with
       | :? RepoError as err -> err |> mapRepoError
       | _ -> 500 |> StatusCodeResult :> ActionResult
-    | _, vals -> vals[0] |> OkObjectResult :> ActionResult
+    | x, vals when x.Name = "Ok" -> vals[0] |> OkObjectResult :> ActionResult
+    | _, vals -> vals |> OkObjectResult :> ActionResult
 
   type RepoResultFilter() =
     interface IAsyncResultFilter with
