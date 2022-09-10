@@ -1,4 +1,4 @@
-namespace proj_api
+namespace ScrapperAPI
 
 #nowarn "20"
 
@@ -24,6 +24,7 @@ open Microsoft.AspNetCore.Mvc
 open Microsoft.AspNetCore.Mvc.Filters
 open Microsoft.FSharp.Reflection
 open Common.DaprState
+open Common.DaprAPI
 
 module Program =
   let exitCode = 0
@@ -52,7 +53,7 @@ module Program =
       )
 
     services
-      .AddControllers()
+      .AddControllers(fun opts -> opts.Filters.Add(RepoResultFilter()))
       .AddJsonOptions(fun opts ->
         opts.JsonSerializerOptions.PropertyNameCaseInsensitive <- true
         opts.JsonSerializerOptions.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase

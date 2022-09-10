@@ -2,6 +2,7 @@
 
 module PeojectsRepo =
   open Common.DaprState.StateList
+  open Common.Repo.RepoResult
 
   type ProjectEntity =
     { Id: string
@@ -16,5 +17,8 @@ module PeojectsRepo =
   let createRepo env =
     let repo = stateListRepo<ProjectEntity> env
 
-    {| Create = fun enty -> repo.Insert USER_KEY (fun x -> x.Id = enty.Id) enty
+    {| Create =
+        fun enty ->
+          repo.Insert USER_KEY (fun x -> x.Id = enty.Id) enty
+          |> taskMap noneToConflict
        GetAll = fun () -> repo.GetAll USER_KEY |}

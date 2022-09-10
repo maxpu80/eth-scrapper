@@ -6,12 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ProjectsRepo.fs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Common\DaprState\DaprState.fsproj" />
-    <ProjectReference Include="..\..\Common\Repo\Repo.fsproj" />
+    <Compile Include="RepoResult.fs" />
   </ItemGroup>
 
 </Project>
