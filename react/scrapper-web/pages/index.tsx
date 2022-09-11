@@ -4,7 +4,7 @@ import Image from 'next/image';
 import styles from '../styles/Home.module.css';
 import { useAppSelector, useAppDispatch } from '../app/hooks';
 import { selectProjects } from '../features/projects/projectsSlice';
-import { add } from '../features/projects/projectsSlice';
+import { add, fetchAllRequest } from '../features/projects/projectsSlice';
 
 const Home: NextPage = () => {
   const projects = useAppSelector(selectProjects);
@@ -17,6 +17,7 @@ const Home: NextPage = () => {
 
   return (
     <>
+      <button onClick={() => dispatch(fetchAllRequest())}>Fetch</button>
       <button onClick={onAdd}>Add</button>
       <ul>
         {Object.values(projects).map((project) => (
