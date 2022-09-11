@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { dataAccess } from '../dataAcess';
 import { ApiError, ApiResult } from '../sharedModels';
-import { CreateProjectError, CreateProjectResult, Project } from './projectModels';
+import { CreateProjectError, CreateProjectResult, Project, ScrapperState, VersionAction } from './projectModels';
 export interface AddProjectData {
   contractAddress: string;
 }
@@ -38,6 +38,13 @@ export const createProject = async (data: AddProjectData): Promise<CreateProject
     contractAddress: data.contractAddress,
     name: data.contractAddress,
     abi: '',
+    versions: {
+      v1: {
+        id: 'v1',
+        name: 'v1',
+        createdAt: new Date().getTime(),
+      },
+    },
   } as Project;
   return { kind: 'ok', value: body };
 };
@@ -52,6 +59,19 @@ export const getProjects = async (): Promise<ApiResult<Project[]>> => {
         name: 'test1',
         contractAddress: 'test',
         abi: 'test',
+        versions: {
+          v1: {
+            id: 'v1',
+            name: 'v1',
+            createdAt: new Date().getTime(),
+            state: {
+              updatedAt: new Date().getTime(),
+              status: 'pause',
+              block: {},
+              requestBlock: {},
+            },
+          },
+        },
       },
     ],
   };
@@ -66,6 +86,24 @@ export const removeProject = async (id: string): Promise<ApiResult<Project>> => 
       name: 'test1',
       contractAddress: 'test',
       abi: 'test',
+      versions: {},
+    },
+  };
+};
+
+export const projectVersionAction = async (
+  projectId: string,
+  versionId: string,
+  action: VersionAction,
+): Promise<ApiResult<ScrapperState>> => {
+  //return dataAccess.post<ScrapperState>(`projects/${projectId}/versions/${versionId}/${action}`, {});
+  return {
+    kind: 'ok',
+    value: {
+      updatedAt: new Date().getTime(),
+      status: 'continue',
+      requestBlock: {},
+      block: {},
     },
   };
 };

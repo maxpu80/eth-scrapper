@@ -73,5 +73,5 @@ export const remove = async <T>(config: DataAccessConfig, path: string): Promise
 export const dataAccess = {
   get: <T>(path: string) => get<T>(appConfig.api, path),
   post: <T>(path: string, data: any) => post<T>(appConfig.api, path, data),
-  remove: <T>(path: string) => post<T>(appConfig.api, path, data),
+  remove: <T>(path: string) => remove<T>(appConfig.api, path),
 };

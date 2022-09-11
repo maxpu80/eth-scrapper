@@ -2,8 +2,14 @@ import type { NextPage } from 'next';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import AddProject from '../components/AddProject';
 import ProjectsList from '../components/ProjectsList';
-import { AddProjectData, createProject, removeProject } from '../features/projects/projectsService';
-import { add, remove, selectProjects } from '../features/projects/projectsSlice';
+import { VersionAction } from '../features/projects/projectModels';
+import {
+  AddProjectData,
+  createProject,
+  projectVersionAction,
+  removeProject,
+} from '../features/projects/projectsService';
+import { add, remove, selectProjects, setVersionState } from '../features/projects/projectsSlice';
 
 const Projects: NextPage = () => {
   const projects = useAppSelector(selectProjects);
@@ -32,11 +38,23 @@ const Projects: NextPage = () => {
     }
   };
 
+  const onVersionAction = async (projectId: string, versionId: string, action: VersionAction) => {
+    const result = await projectVersionAction(projectId, versionId, action);
+    switch (result.kind) {
+      case 'ok':
+        dispatch(setVersionState({ projectId, versionId, state: result.value, action }));
+        return result;
+      case 'error':
+        return result;
+    }
+  };
+
   return (
     <>
       <AddProject onAdd={onAdd}></AddProject>
       <ProjectsList
         projects={projects}
+        onVersionAction={onVersionAction}
         onRemove={onRemove}></ProjectsList>
     </>
   );

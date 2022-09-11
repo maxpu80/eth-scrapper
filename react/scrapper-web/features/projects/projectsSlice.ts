@@ -1,19 +1,22 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import { put, takeEvery, call } from 'redux-saga/effects';
-import { Project } from './projectModels';
+import { Project, ProjectState, ScrapperState, ScrapperVersion, VersionAction } from './projectModels';
 import { getProjects } from './projectsService';
 import Projects from '../../pages';
 import { ApiResult } from '../sharedModels';
-import { omit } from 'lodash';
+import { omit, set } from 'lodash';
 
 export interface AddActionPayload {
   id: string;
   name: string;
 }
 
-export interface ProjectState {
-  [key: string]: Project;
+export interface VersionActionPayload {
+  projectId: string;
+  versionId: string;
+  action: VersionAction;
+  state: ScrapperState;
 }
 
 const initialState: ProjectState = {};
@@ -31,12 +34,19 @@ export const projectsSlice = createSlice({
     remove: (state, action: PayloadAction<string>) => {
       return omit(state, action.payload);
     },
+    setVersionState: (state, action: PayloadAction<VersionActionPayload>) => {
+      return set(
+        state,
+        [action.payload.projectId, 'versions', action.payload.versionId, 'state'],
+        action.payload.state,
+      );
+    },
   },
 });
 
 export const selectProjects = (state: RootState) => state.projects;
 
-export const { add, remove } = projectsSlice.actions;
+export const { add, remove, setVersionState } = projectsSlice.actions;
 
 export const fetchAllRequest = createAction('projects/fetchAllRequest');
 
