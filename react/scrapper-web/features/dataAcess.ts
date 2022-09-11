@@ -56,7 +56,22 @@ export const post = async <T>(config: DataAccessConfig, path: string, data: any)
   }
 };
 
+export const remove = async <T>(config: DataAccessConfig, path: string): Promise<ApiResult<T>> => {
+  const url = `${config.baseUrl}/${path}`;
+  const headers = {
+    'dapr-app-id': config.daprAppId,
+  };
+  try {
+    const response = await axios.delete<T>(url, { headers });
+    return ofResponse(response);
+  } catch (err) {
+    console.error(err);
+    return ofError();
+  }
+};
+
 export const dataAccess = {
   get: <T>(path: string) => get<T>(appConfig.api, path),
   post: <T>(path: string, data: any) => post<T>(appConfig.api, path, data),
+  remove: <T>(path: string) => post<T>(appConfig.api, path, data),
 };
