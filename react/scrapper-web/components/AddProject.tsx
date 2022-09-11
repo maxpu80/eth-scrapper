@@ -1,11 +1,9 @@
 import { NextPage } from 'next';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { AddProjectData } from '../features/projects/projectsService';
+import { CreateProjectError } from '../features/projects/projectModels';
 
-export interface AddProjectData {
-  contractAddress: string;
-}
-
-export type AddResult = 'ok' | 'contract-not-found';
+export type AddResult = 'ok' | CreateProjectError;
 
 export interface AddProjectProps {
   onAdd: (evt: AddProjectData) => Promise<AddResult>;
@@ -38,8 +36,11 @@ const AddProject = ({ onAdd }: AddProjectProps) => {
               setFieldTouched('contractAddress', false);
               console.log('result', result);
               break;
-            case 'contract-not-found':
+            case 'get-abi-error':
               setFieldError('contractAddress', 'Contract not found');
+              break;
+            case 'api-error':
+              setFieldError('contractAddress', 'Server error try later');
               break;
           }
         }}

@@ -1,7 +1,8 @@
 import type { NextPage } from 'next';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import AddProject, { AddProjectData } from '../components/AddProject';
+import AddProject from '../components/AddProject';
 import ProjectsList from '../components/ProjectsList';
+import { AddProjectData, createProject } from '../features/projects/projectsService';
 import { add, fetchAllRequest, selectProjects } from '../features/projects/projectsSlice';
 
 const Projects: NextPage = () => {
@@ -9,10 +10,14 @@ const Projects: NextPage = () => {
   const dispatch = useAppDispatch();
 
   const onAdd = async (data: AddProjectData) => {
-    console.log('!!!!', data);
-    const id = new Date().getTime().toString();
-    dispatch(add({ id, name: data.contractAddress }));
-    return 'ok' as 'ok';
+    const result = await createProject(data);
+    switch (result.kind) {
+      case 'ok':
+        dispatch(add(result.value));
+        return 'ok' as 'ok';
+      case 'error':
+        return result.error;
+    }
   };
 
   return (

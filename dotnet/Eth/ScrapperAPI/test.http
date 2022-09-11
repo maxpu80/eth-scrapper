@@ -1,5 +1,5 @@
 #@host = http://localhost:3505
-@host = http://localhost:3002
+@host = http://localhost:6001
 @appId = scrapper-api
 
 ###
