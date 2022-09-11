@@ -1,10 +1,6 @@
 import type { NextPage } from 'next';
-import Head from 'next/head';
-import Image from 'next/image';
-import styles from '../styles/Home.module.css';
-import { useAppSelector, useAppDispatch } from '../app/hooks';
-import { selectProjects } from '../features/projects/projectsSlice';
-import { add, fetchAllRequest } from '../features/projects/projectsSlice';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { add, fetchAllRequest, selectProjects } from '../features/projects/projectsSlice';
 
 const Home: NextPage = () => {
   const projects = useAppSelector(selectProjects);
