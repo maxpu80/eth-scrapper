@@ -1,4 +1,10 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../../app/store';
+
+export interface AddActionPayload {
+  id: string;
+  name: string;
+}
 
 export interface Project {
   id: string;
@@ -16,7 +22,15 @@ const initialState: ProjectState = {
 export const projectsSlice = createSlice({
   name: 'projects',
   initialState,
-  reducers: {},
+  reducers: {
+    add: (state, action: PayloadAction<AddActionPayload>) => {
+      return { ...state, [action.payload.id]: action.payload };
+    },
+  },
 });
+
+export const selectProjects = (state: RootState) => state.projects;
+
+export const { add } = projectsSlice.actions;
 
 export default projectsSlice.reducer;
