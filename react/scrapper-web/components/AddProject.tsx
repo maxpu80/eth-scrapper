@@ -1,12 +1,11 @@
-import { NextPage } from 'next';
 import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { CreateProjectError, CreateProjectResult } from '../features/projects/projectModels';
 import { AddProjectData } from '../features/projects/projectsService';
-import { CreateProjectError } from '../features/projects/projectModels';
 
 export type AddResult = 'ok' | CreateProjectError;
 
 export interface AddProjectProps {
-  onAdd: (evt: AddProjectData) => Promise<AddResult>;
+  onAdd: (evt: AddProjectData) => Promise<CreateProjectResult>;
 }
 
 const onValidateForm = (data: AddProjectData) => {
@@ -30,18 +29,25 @@ const AddProject = ({ onAdd }: AddProjectProps) => {
         onSubmit={async (values, { setSubmitting, setFieldValue, setFieldError, setFieldTouched }) => {
           const result = await onAdd(values);
           setSubmitting(false);
-          switch (result) {
+          switch (result.kind) {
             case 'ok':
               setFieldValue('contractAddress', '');
               setFieldTouched('contractAddress', false);
               console.log('result', result);
               break;
-            case 'get-abi-error':
-              setFieldError('contractAddress', 'Contract not found');
-              break;
-            case 'api-error':
-              setFieldError('contractAddress', 'Server error try later');
-              break;
+            case 'error': {
+              switch (result.error.kind) {
+                case 'get-abi-error':
+                  setFieldError('contractAddress', 'Contract not found');
+                  break;
+                case 'api-response-error':
+                  setFieldError('contractAddress', 'Server error try later');
+                  break;
+                case 'api-network-error':
+                  setFieldError('contractAddress', 'Network error');
+                  break;
+              }
+            }
           }
         }}
         validate={onValidateForm}>

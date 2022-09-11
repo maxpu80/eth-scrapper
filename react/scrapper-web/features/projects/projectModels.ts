@@ -1,3 +1,5 @@
+import { ApiError, ApiResult } from '../sharedModels';
+
 export interface Project {
   id: string;
   contractAddress: string;
@@ -5,4 +7,6 @@ export interface Project {
   abi: string;
 }
 
-export type CreateProjectError = 'get-abi-error' | 'api-error';
+export type CreateProjectError = ApiError | { kind: 'get-abi-error' };
+
+export type CreateProjectResult = ApiResult<Project, CreateProjectError>;

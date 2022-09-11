@@ -1,49 +1,34 @@
-import { CreateProjectError, Project } from './projectModels';
-
+import axios from 'axios';
+import { dataAccess } from '../dataAcess';
+import { ApiError, ApiResult } from '../sharedModels';
+import { CreateProjectResult, Project } from './projectModels';
 export interface AddProjectData {
   contractAddress: string;
 }
 
-export interface Ok<T> {
-  kind: 'ok';
-  value: T;
-}
-
-export interface Error<T> {
-  kind: 'error';
-  error: T;
-}
-
-export type Result<S, E> = Ok<S> | Error<E>;
-
-export const createProject = async (data: AddProjectData): Promise<Result<Project, CreateProjectError>> => {
-  try {
-    const contractAddress = data.contractAddress;
-    const abiUrl = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}`;
-    const abiResult = await fetch(abiUrl);
-    const abiJsonResult = await abiResult.json();
-    if (abiJsonResult.code === '0') {
-      return { kind: 'error', error: 'get-abi-error' };
-    }
+const getAbi = async (contractAddress: string): Promise<CreateProjectResult> => {
+  const abiUrl = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}`;
+  const abiResult = await axios.get(abiUrl);
+  const abiJsonResult = abiResult.data;
+  if (abiJsonResult.status === '0') {
+    return { kind: 'error', error: { kind: 'get-abi-error' } };
+  } else {
     const abi = abiJsonResult.result;
-    const headers = {
-      'dapr-app-id': 'projects-api',
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    };
+    return { kind: 'ok', value: abi };
+  }
+};
+
+export const createProject = async (data: AddProjectData): Promise<ApiResult<Project, CreateProjectError>> => {
+  const abiResult = await getAbi(data.contractAddress);
+  if (abiResult.kind === 'error') {
+    return abiResult;
+  } else {
     const body = {
       id: data.contractAddress,
       contractAddress: data.contractAddress,
       name: data.contractAddress,
-      abi,
+      abi: abiResult.value,
     };
-    const strBody = JSON.stringify(body);
-    const postResult = await fetch('http://localhost:6001/projects', { method: 'post', headers, body: strBody });
-    console.log('!!!', postResult);
-    const jsonResult = await postResult.json();
-    return { kind: 'ok', value: jsonResult };
-  } catch (err) {
-    console.error(err);
-    return { kind: 'error', error: 'api-error' };
+    return dataAccess.post<Project>('projects', body);
   }
 };
