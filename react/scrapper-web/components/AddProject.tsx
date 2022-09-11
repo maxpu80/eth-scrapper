@@ -29,11 +29,19 @@ const AddProject = ({ onAdd }: AddProjectProps) => {
       <h2>Add new project</h2>
       <Formik
         initialValues={{ contractAddress: '' }}
-        onSubmit={async (values, { setSubmitting, setFieldValue }) => {
+        onSubmit={async (values, { setSubmitting, setFieldValue, setFieldError, setFieldTouched }) => {
           const result = await onAdd(values);
           setSubmitting(false);
-          setFieldValue('contractAddress', '');
-          console.log('result', result);
+          switch (result) {
+            case 'ok':
+              setFieldValue('contractAddress', '');
+              setFieldTouched('contractAddress', false);
+              console.log('result', result);
+              break;
+            case 'contract-not-found':
+              setFieldError('contractAddress', 'Contract not found');
+              break;
+          }
         }}
         validate={onValidateForm}>
         <Form>
