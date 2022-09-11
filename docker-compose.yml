@@ -45,7 +45,7 @@ services:
   #   depends_on:
   #     - elasticsearch    
   ############################
-  # docker-dispatcher-actor + Dapr sidecar
+  # scrapper-dispatcher-actor + Dapr sidecar
   ############################
   scrapper-dispatcher-actor:
     build: 
@@ -72,6 +72,33 @@ services:
       - scrapper-dispatcher-actor
     network_mode: "service:scrapper-dispatcher-actor"
   ############################
+  # scrapper-elastic-store-actor + Dapr sidecar
+  ############################
+  scrapper-elastic-store-actor:
+    build: 
+      context: ./dotnet/Eth
+      dockerfile: ScrapperElasticStoreActor/Dockerfile         
+      args:
+        - PORT=3001
+    depends_on:
+      - redis
+      - placement
+      - seq
+    networks:
+      - dapr-net
+  scrapper-elastic-store-actor-dapr:
+    image: "daprio/daprd:1.8.4"
+    command: ["./daprd",
+     "-app-id", "scrapper-elastic-store-actor",
+     "-app-port", "3001",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./docker-compose-components/:/components"
+    depends_on:
+      - scrapper-elastic-store-actor
+    network_mode: "service:scrapper-elastic-store-actor"    
+  ############################
   # docker-scrapper-api + Dapr sidecar
   ############################
   scrapper-api:
@@ -79,9 +106,9 @@ services:
       context: ./dotnet/Eth
       dockerfile: ScrapperAPI/Dockerfile         
       args: 
-        - PORT=3001
+        - PORT=6000
     ports:
-      - 3002:3001
+      - 6001:6000
     depends_on:
       - redis
       - placement
@@ -92,7 +119,7 @@ services:
     image: "daprio/daprd:1.8.4"
     command: ["./daprd",
      "-app-id", "scrapper-api",
-     "-app-port", "3001",
+     "-app-port", "6000",
      "-placement-host-address", "placement:50006",
      "-components-path", "/components"]
     volumes:

@@ -9,12 +9,12 @@ WORKDIR /src
 
 COPY ["Libs/Common/DaprActor/", "Libs/Common/DaprActor/"]
 COPY ["Libs/Scrapper/ScrapperModels/", "Libs/Scrapper/ScrapperModels/"]
-COPY ["ScrapperDispatcherActor/", "ScrapperDispatcherActor/"]
+COPY ["ScrapperElasticStoreActor/", "ScrapperElasticStoreActor/"]
 COPY ["Eth.sln", "Eth.sln"]
-RUN dotnet restore ScrapperDispatcherActor
+RUN dotnet restore ScrapperElasticStoreActor
 
 FROM build AS publish
-RUN dotnet publish --no-restore -c Release -o /app/publish ScrapperDispatcherActor
+RUN dotnet publish --no-restore -c Release -o /app/publish ScrapperElasticStoreActor
 
 FROM base AS final
 WORKDIR /app
@@ -23,5 +23,5 @@ RUN echo ${PORT}
 EXPOSE  ${PORT}
 ENV PORT ${PORT}
 
-ENTRYPOINT ["dotnet", "ScrapperDispatcherActor.dll"]
+ENTRYPOINT ["dotnet", "ScrapperElasticStoreActor.dll"]
 
