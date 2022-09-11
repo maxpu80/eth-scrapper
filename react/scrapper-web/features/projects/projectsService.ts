@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { dataAccess } from '../dataAcess';
 import { ApiError, ApiResult } from '../sharedModels';
-import { CreateProjectResult, Project } from './projectModels';
+import { CreateProjectError, CreateProjectResult, Project } from './projectModels';
 export interface AddProjectData {
   contractAddress: string;
 }
 
-const getAbi = async (contractAddress: string): Promise<CreateProjectResult> => {
+const getAbi = async (contractAddress: string): Promise<ApiResult<string, CreateProjectError>> => {
   const abiUrl = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}`;
   const abiResult = await axios.get(abiUrl);
   const abiJsonResult = abiResult.data;
@@ -28,7 +28,8 @@ export const createProject = async (data: AddProjectData): Promise<ApiResult<Pro
       contractAddress: data.contractAddress,
       name: data.contractAddress,
       abi: abiResult.value,
-    };
-    return dataAccess.post<Project>('projects', body);
+    } as Project;
+    //return dataAccess.post<Project>('projects', body);
+    return { kind: 'ok', value: body };
   }
 };
