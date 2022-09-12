@@ -37,7 +37,7 @@ module StateList =
             match head with
             | Some head -> head |> Error
             | None -> entity :: data |> Ok
-          | None -> Ok [])
+          | None -> Ok [ entity ])
 
       return result |> Result.map (fun _ -> entity)
     }

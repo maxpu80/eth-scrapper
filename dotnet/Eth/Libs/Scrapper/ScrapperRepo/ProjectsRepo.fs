@@ -35,7 +35,7 @@ module PeojectsRepo =
       repo.GetHead USER_KEY (fun x -> x.Id = projId)
 
     {| Create =
-        fun (createEnty: CreateProjectEntity) ->          
+        fun (createEnty: CreateProjectEntity) ->
           task {
             let enty =
               { Id = createEnty.Id
@@ -45,14 +45,23 @@ module PeojectsRepo =
                 EthProviderUrl = createEnty.EthProviderUrl }
 
             let! result = repo.Insert USER_KEY (fun x -> x.Id = enty.Id) enty
-            
-            match (result, createEnty.VersionId) with
-            | (Ok proj), versionId when versionId <> null ->
-              let version: CreateVersionEntity = { Id = versionId }
-              // TODO : Version entity not stored here, though suppose to !
-              let! _ = versionRepo.Create proj.Id version
-              return errorToConflict result
-            | _ -> return errorToConflict result
+
+            match (result) with
+            | (Ok proj) ->
+              if createEnty.VersionId <> null then
+                let version: CreateVersionEntity = { Id = createEnty.VersionId }
+                let! version = versionRepo.Create proj.Id version
+
+                match version with
+                | Ok version ->
+                  return
+                    { Project = proj
+                      Versions = [ version ] }
+                    |> Ok
+                | Error _ -> return { Project = proj; Versions = [] } |> Ok
+              else
+                return { Project = proj; Versions = [] } |> Ok
+            | Error err -> return err |> box |> Conflict |> Error
           }
        GetAll = fun () -> repo.GetAll USER_KEY |> taskMap Ok
        GetAllWithVerions =

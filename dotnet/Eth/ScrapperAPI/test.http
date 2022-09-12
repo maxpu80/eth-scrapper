@@ -1,5 +1,5 @@
-#@host = http://localhost:3505
-@host = http://localhost:6001
+@host = http://localhost:3505
+#@host = http://localhost:6001
 @appId = scrapper-api
 
 ###
@@ -14,7 +14,7 @@ dapr-app-id: {{appId}}
 Content-Type: application/json 
 Accept: application/json
 
-{ "id": "1",
+{ "id": "20",
   "name": "test",
   "address": "xxx",
   "abi": "yyy",
@@ -23,22 +23,22 @@ Accept: application/json
 
 ###
 
-DELETE {{host}}/projects/16
+DELETE {{host}}/projects/20
 dapr-app-id: {{appId}}
 ###
 
-GET {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions
+GET {{host}}/projects/20/versions
 dapr-app-id: {{appId}}
 
 ###
 
-POST {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions
+POST {{host}}/projects/20/versions
 dapr-app-id: {{appId}}
 Content-Type: application/json 
 Accept: application/json
 
 {
-  "id": "v3"
+  "id": "v1"
 }
 
 ###

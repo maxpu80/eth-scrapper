@@ -55,16 +55,14 @@ module State =
     id
     (updateFun: 'a option -> Result<'a, 'b>)
     =
-    task {
+    task {      
       let! docEntry = app.Dapr.GetStateEntryAsync<'a>(storeName, id)
-
       let (etag, doc) =
         match box docEntry.Value with
         | null ->
           // document still not created
           (NEW_ETAG, updateFun None)
         | _ -> (docEntry.ETag, updateFun (Some docEntry.Value))
-
       match doc with
       | Ok doc ->
         let! res = app.Dapr.TrySaveStateAsync(storeName, id, doc, etag)
@@ -77,7 +75,7 @@ module State =
 
         match res.IsSuccess with
         | true ->
-          app.Logger.LogTrace("{stateStore} document with {docKey} is updated with {result}", storeName, id, "[res]")
+          app.Logger.LogTrace("{stateStore} document with {docKey} is updated with {result}", storeName, id, res)
         | false ->
           app.Logger.LogTrace("{stateStore} document with {docKey} fail to update with {etag}", storeName, id, etag)
 

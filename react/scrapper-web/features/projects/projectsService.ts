@@ -40,21 +40,18 @@ export const createProject = async (data: AddProjectData): Promise<CreateProject
       ethProviderUrl: data.ethProviderUrl,
       versionId: 'v1',
     } as Partial<Project>;
-    const projectResult = await dataAccess.post<Project>('projects', body);
+    const projectResult = await dataAccess.post<Project & { versions: ScrapperVersion[] }>('projects', body);
     if (projectResult.kind === 'ok') {
-      //await new Promise((r) => setTimeout(r, 15000));
-      const versionResult = await dataAccess.post<ScrapperVersion>(`projects/${projectResult.value.id}/versions`, {
-        id: 'v1',
-      });
-      console.log('---', versionResult, projectResult.value.id);
-      if (versionResult.kind === 'ok') {
-        return {
-          kind: 'ok',
-          value: { ...projectResult.value, versions: { [versionResult.value.id]: versionResult.value } },
-        };
-      }
+      return {
+        kind: 'ok',
+        value: {
+          ...projectResult.value,
+          versions: Object.fromEntries(projectResult.value.versions.map((x) => [x.id, x])),
+        },
+      };
+    } else {
+      return projectResult;
     }
-    return projectResult;
   }
 
   // const body = {
