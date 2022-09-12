@@ -11,3 +11,11 @@ export const getEthBlockNumber = async (ethProviderUrl: string): Promise<Result<
     return { kind: 'error', error: err.message };
   }
 };
+
+export const storeEthProviderUrl = async (ethProviderUrl: string) => {
+  localStorage.setItem('ethProviderUrl', ethProviderUrl);
+};
+
+export const getEthProviderUrl = async () => {
+  return localStorage.getItem('ethProviderUrl');
+};

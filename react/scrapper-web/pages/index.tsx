@@ -3,7 +3,7 @@ import { useAppDispatch, useAppSelector } from '../app/hooks';
 import AddProject from '../components/AddProject';
 import { AppConfig } from '../components/AppConfig';
 import ProjectsList from '../components/ProjectsList';
-import { getEthBlockNumber } from '../features/app/appService';
+import { getEthBlockNumber, storeEthProviderUrl } from '../features/app/appService';
 import { selectApp, setEthBlockNumber, setEthProviderUrl } from '../features/app/appSlice';
 import { VersionAction } from '../features/projects/projectModels';
 import {
@@ -54,19 +54,19 @@ const Projects: NextPage = () => {
   };
 
   const onSetProviderUrl = async (url: string) => {
-    const result = await getEthBlockNumber(url);
-    console.log('+++', result);
-    if (result.kind === 'ok') {
+    const blockNumberResult = await getEthBlockNumber(url);
+    if (blockNumberResult.kind === 'ok') {
+      await storeEthProviderUrl(url);
       dispatch(setEthProviderUrl(url));
-      dispatch(setEthBlockNumber(result.value));
+      dispatch(setEthBlockNumber(blockNumberResult.value));
     }
-    return result;
+    return blockNumberResult;
   };
 
   return (
     <>
       <AppConfig onSetProviderUrl={onSetProviderUrl}></AppConfig>
-      {app.ethProviderUrl ? (
+      {app.config.ethProviderUrl ? (
         <>
           <AddProject onAdd={onAdd}></AddProject>
           <ProjectsList

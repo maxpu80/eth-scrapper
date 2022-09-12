@@ -48,9 +48,9 @@ export const selectProjects = (state: RootState) => state.projects;
 
 export const { add, remove, setVersionState } = projectsSlice.actions;
 
-export const fetchAllRequest = createAction('projects/fetchAllRequest');
-
 export default projectsSlice.reducer;
+
+export const fetchAllRequest = createAction('projects/fetchAllRequest');
 
 function* fetchAll() {
   const projects: ApiResult<Project[]> = yield call(getProjects);

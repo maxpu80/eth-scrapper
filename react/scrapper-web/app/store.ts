@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import projectsReducer, { projectsSaga } from '../features/projects/projectsSlice';
 import createSagaMiddleware from '@redux-saga/core';
 import appReducer, { appSaga } from '../features/app/appSlice';
+import { all } from 'redux-saga/effects';
 
 const sagaMiddleware = createSagaMiddleware();
 
@@ -13,12 +14,11 @@ export const store = configureStore({
   middleware: [sagaMiddleware],
 });
 
-export function* mainSaga() {
-  yield appSaga();
-  yield projectsSaga();  
+export function* rootSaga() {
+  yield all([projectsSaga(), appSaga()]);
 }
 
-sagaMiddleware.run(mainSaga);
+sagaMiddleware.run(rootSaga);
 
 export type RootState = ReturnType<typeof store.getState>;
 
