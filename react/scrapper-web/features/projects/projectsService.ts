@@ -128,13 +128,13 @@ export const projectVersionAction = async (
   versionId: string,
   action: VersionAction,
 ): Promise<ApiResult<ScrapperState>> => {
-  //return dataAccess.post<ScrapperState>(`projects/${projectId}/versions/${versionId}/${action}`, {});
-  return {
-    kind: 'ok',
-    value: {
-      updatedAt: new Date().getTime(),
-      status: 'continue',
-      requestBlock: {},
-    },
-  };
+  return dataAccess.post<ScrapperState>(`projects/${projectId}/versions/${versionId}/${action}`, {});
+  // return {
+  //   kind: 'ok',
+  //   value: {
+  //     updatedAt: new Date().getTime(),
+  //     status: 'continue',
+  //     requestBlock: {},
+  //   },
+  // };
 };

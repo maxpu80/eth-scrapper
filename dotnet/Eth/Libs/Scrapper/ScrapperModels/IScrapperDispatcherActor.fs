@@ -3,6 +3,9 @@
 open Dapr.Actors
 open System.Threading.Tasks
 open Common.DaprActor.ActorResult
+open System.Runtime.Serialization
+open System.Reflection
+open Microsoft.FSharp.Reflection
 
 type StartData =
   { EthProviderUrl: string
@@ -28,11 +31,17 @@ type State =
     Date: int64
     FinishDate: int64 option }
 
+
+[<KnownType("KnownTypes")>]
 type ScrapperDispatcherActorError =
   | StateConflict of State * string
   | StateNotFound
+  static member KnownTypes() =
+    knownTypes<ScrapperDispatcherActorError> ()
+
 
 type ScrapperDispatcherActorResult = Result<State, ScrapperDispatcherActorError>
+
 
 type IScrapperDispatcherActor =
   inherit IActor

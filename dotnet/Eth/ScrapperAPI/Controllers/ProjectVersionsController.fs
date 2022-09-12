@@ -8,6 +8,7 @@ open ScrapperAPI.Services
 open ScrapperDispatcherProxy
 open Common.DaprAPI
 open ScrapperModels
+open Microsoft.Extensions.Logging
 
 module private DTO =
 
@@ -38,7 +39,6 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   member this.Start(projectId: string, versionId: string) =
     task {
       let! result = ScrapperDispatcherProxy.start env projectId versionId
-
       match result with
       | Error err ->
         match err with
@@ -87,6 +87,6 @@ type ProjectVersionssController(env: DaprStoreEnv) =
       let! result = ScrapperDispatcherProxy.reset projectId versionId
 
       match result with
-      | true -> return this.NoContent() :> IActionResult
-      | false -> return this.NotFound() :> IActionResult
+      | true -> return NoContentResult() :> IActionResult
+      | false -> return NotFoundObjectResult() :> IActionResult
     }
