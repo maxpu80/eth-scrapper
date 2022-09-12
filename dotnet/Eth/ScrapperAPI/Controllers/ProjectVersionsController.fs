@@ -12,12 +12,32 @@ open Microsoft.Extensions.Logging
 
 module private DTO =
 
+  let mapState (state: State) =
+    {| request =
+        {| state.Request with
+             BlockRange =
+               {| From = state.Request.BlockRange.From |> Option.toNullable
+                  To = state.Request.BlockRange.To |> Option.toNullable |} |}
+       date = state.Date
+       finishDate = state.FinishDate
+       status =
+        match state.Status with
+        | Status.Continue -> "continue"
+        | Status.Pause -> "pause"
+        | Status.Finish -> "finish"
+        | Status.Schedule -> "schedule" |}
+
   let mapScrapperDispatcherActorResult (result: ScrapperDispatcherActorResult) =
     match result with
-    | Ok state -> state |> OkObjectResult :> IActionResult
+    | Ok state -> state |> mapState |> OkObjectResult :> IActionResult
     | Error err ->
       match err with
-      | StateConflict (state, error) -> ConflictObjectResult({| State = state; Error = error |}) :> IActionResult
+      | StateConflict (state, error) ->
+        ConflictObjectResult(
+          {| State = (mapState state)
+             Error = error |}
+        )
+        :> IActionResult
       | StateNotFound -> NotFoundObjectResult() :> IActionResult
 
 [<ApiController>]
@@ -39,6 +59,7 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   member this.Start(projectId: string, versionId: string) =
     task {
       let! result = ScrapperDispatcherProxy.start env projectId versionId
+
       match result with
       | Error err ->
         match err with
@@ -63,7 +84,7 @@ type ProjectVersionssController(env: DaprStoreEnv) =
       let! result = ScrapperDispatcherProxy.state projectId versionId
 
       match result with
-      | Some result -> return result |> this.Ok :> IActionResult
+      | Some result -> return result |> DTO.mapState |> this.Ok :> IActionResult
       | None -> return NotFoundObjectResult() :> IActionResult
     }
 
