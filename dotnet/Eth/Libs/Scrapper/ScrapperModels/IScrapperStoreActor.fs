@@ -9,7 +9,8 @@ type ContinueSuccessResult =
     IndexPayload: string }
 
 type ContinueSuccessData =
-  { ContractAddress: string
+  { EthProviderUrl: string
+    ContractAddress: string
     Abi: string
     Result: ContinueSuccessResult }
 

@@ -1,18 +1,8 @@
 const Web3 = require("web3");
 const _ = require("lodash");
 
-// const PROVIDER_URL =
-//   "https://rinkeby.infura.io/v3/11f741ef96ad4ce5b963ea0ba8d9703b";
-
-const PROVIDER_URL = "https://mainnet.infura.io/v3/11f741ef96ad4ce5b963ea0ba8d9703b";
-
-const provider = PROVIDER_URL;
-
-const web3Provider = new Web3.providers.HttpProvider(provider);
-
-const web3 = new Web3(web3Provider);
-
 export interface Data {
+  ethProviderUrl: string;
   contractAddress: string;
   abi: JSON;
   blockRange: { from?: number; to?: number };
@@ -44,7 +34,7 @@ export interface Error {
 
 export type Result = Success | Error;
 
-const createContract = (abi: any, address: string) => {
+const createContract = (web3: any, abi: any, address: string) => {
   const factoryContract = new web3.eth.Contract(abi, address);
   return factoryContract;
 };
@@ -65,6 +55,10 @@ const cleanupEventValues = (vals: any) =>
 
 // https://ethereum.stackexchange.com/questions/54967/how-to-get-only-past-2-days-events-using-getpastevents-everytime
 export const handle = async (data: Data): Promise<Result> => {
+  const web3Provider = new Web3.providers.HttpProvider(data.ethProviderUrl);
+
+  const web3 = new Web3(web3Provider);
+
   const fromBlock = data.blockRange.from || 0;
   const toBlock = data.blockRange.to || (await web3.eth.getBlockNumber());
 
@@ -73,7 +67,7 @@ export const handle = async (data: Data): Promise<Result> => {
     to: toBlock,
   };
 
-  const contract = createContract(data.abi, data.contractAddress);
+  const contract = createContract(web3, data.abi, data.contractAddress);
 
   try {
     const result = await read(contract, blockRange.from, blockRange.to);

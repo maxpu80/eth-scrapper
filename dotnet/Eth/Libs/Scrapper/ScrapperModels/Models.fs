@@ -23,6 +23,7 @@ type Error =
 type Result = Result<Success, Error>
 
 type ScrapperRequest =
-  { ContractAddress: string
+  { EthProviderUrl: string
+    ContractAddress: string
     Abi: string
     BlockRange: RequestBlockRange }

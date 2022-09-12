@@ -9,7 +9,6 @@
     <Compile Include="Models.fs" />
     <Compile Include="IScrapperDispatcherActor.fs" />
     <Compile Include="IScrapperStoreActor.fs" />
-    <Compile Include="IStoreReaderActor.fs" />
   </ItemGroup>
 
   <ItemGroup>

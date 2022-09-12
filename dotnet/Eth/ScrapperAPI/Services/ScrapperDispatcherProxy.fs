@@ -59,7 +59,8 @@ module ScrapperDispatcherProxy =
         let actor = createActor projectId ver.Id
 
         let data: StartData =
-          { ContractAddress = proj.Address
+          { EthProviderUrl = proj.EthProviderUrl
+            ContractAddress = proj.Address
             Abi = proj.Abi }
 
         let! result = actor.Start data

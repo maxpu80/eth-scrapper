@@ -52,7 +52,8 @@ module ScrapperStoreActor =
     let success = data.Result
 
     let continueData: ContinueData =
-      { ContractAddress = data.ContractAddress
+      { EthProviderUrl = data.EthProviderUrl
+        ContractAddress = data.ContractAddress
         Abi = data.Abi
         Result =
           (Ok

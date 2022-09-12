@@ -5,11 +5,13 @@ open System.Threading.Tasks
 open Common.DaprActor.ActorResult
 
 type StartData =
-  { ContractAddress: string
+  { EthProviderUrl: string
+    ContractAddress: string
     Abi: string }
 
 type ContinueData =
-  { ContractAddress: string
+  { EthProviderUrl: string
+    ContractAddress: string
     Abi: string
     Result: Result }
 

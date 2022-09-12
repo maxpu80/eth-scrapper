@@ -11,6 +11,7 @@ interface RequestBlockRange {
 }
 
 interface Data {
+  ethProviderUrl: string;
   contractAddress: string;
   abi: string;
   blockRange: RequestBlockRange;
@@ -97,6 +98,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     return {
       contractAddress: data.contractAddress,
       abi: data.abi,
+      ethProviderUrl: data.ethProviderUrl,
       result: mapPublishResult(indexId, data.blockRange, result),
     };
   }
@@ -132,6 +134,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     const abi = JSON.parse(data.abi);
 
     const handlerData: HandlerData = {
+      ethProviderUrl: data.ethProviderUrl,
       contractAddress: data.contractAddress,
       abi,
       blockRange: data.blockRange,

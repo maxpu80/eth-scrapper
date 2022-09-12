@@ -16,12 +16,14 @@ module ScrapperDispatcherActor =
       To: System.Nullable<uint> }
 
   type ScrapperRequestDTO =
-    { ContractAddress: string
+    { EthProviderUrl: string
+      ContractAddress: string
       Abi: string
       BlockRange: BlockRangeDTO }
 
   let private toDTO (request: ScrapperRequest) : ScrapperRequestDTO =
-    { ContractAddress = request.ContractAddress
+    { EthProviderUrl = request.EthProviderUrl
+      ContractAddress = request.ContractAddress
       Abi = request.Abi
       BlockRange =
         { From =
@@ -75,7 +77,8 @@ module ScrapperDispatcherActor =
             return false
           | None ->
             let scrapperRequest: ScrapperRequest =
-              { ContractAddress = data.ContractAddress
+              { EthProviderUrl = data.EthProviderUrl
+                ContractAddress = data.ContractAddress
                 Abi = data.Abi
                 BlockRange = { From = None; To = None } }
 
@@ -109,7 +112,8 @@ module ScrapperDispatcherActor =
             let blockRange = nextBlockRangeCalc data.Result
 
             let scrapperRequest: ScrapperRequest =
-              { ContractAddress = data.ContractAddress
+              { EthProviderUrl = data.EthProviderUrl
+                ContractAddress = data.ContractAddress
                 Abi = data.Abi
                 BlockRange = blockRange }
 

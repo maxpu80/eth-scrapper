@@ -8,7 +8,8 @@ module PeojectsRepo =
     { Id: string
       Name: string
       Address: string
-      Abi: string }
+      Abi: string
+      EthProviderUrl: string }
 
 
   // TODO : Multi user env
