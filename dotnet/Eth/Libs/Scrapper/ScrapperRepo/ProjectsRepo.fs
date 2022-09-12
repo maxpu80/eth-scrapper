@@ -19,6 +19,10 @@ module PeojectsRepo =
       Abi: string
       EthProviderUrl: string }
 
+  type ProjectWithVresions =
+    { Project: ProjectEntity
+      Versions: VersionEntity list }
+
 
   // TODO : Multi user env
   let USER_KEY = "user_USER_KEY_projects"
@@ -50,6 +54,27 @@ module PeojectsRepo =
             | _ -> return errorToConflict result
           }
        GetAll = fun () -> repo.GetAll USER_KEY |> taskMap Ok
+       GetAllWithVerions =
+        fun () ->
+          task {
+            let! projects = repo.GetAll USER_KEY
+
+            let versions =
+              projects
+              |> List.map (fun proj ->
+                task {
+                  let! result = versionRepo.GetAll proj.Id
+
+                  match result with
+                  | Ok result -> return { Project = proj; Versions = result }
+                  | Error _ -> return { Project = proj; Versions = [] }
+                }
+                |> Async.AwaitTask)
+
+            let! result = versions |> Async.Parallel
+
+            return result |> Ok
+          }
        GetOneWithVersion =
         fun projId verId ->
           task {

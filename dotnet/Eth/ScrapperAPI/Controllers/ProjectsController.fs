@@ -16,7 +16,7 @@ type ProjectsController(env: DaprStoreEnv) =
   member this.Post(data: CreateProjectEntity) = repo.Create data
 
   [<HttpGet>]
-  member this.GetAll() = repo.GetAll()
+  member this.GetAll() = repo.GetAllWithVerions()
 
   [<HttpDelete("{projectId}")>]
   member this.Delete(projectId: string) = repo.Delete projectId
