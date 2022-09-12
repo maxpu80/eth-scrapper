@@ -10,7 +10,7 @@ module PeojectsRepo =
       Address: string
       Abi: string
       EthProviderUrl: string
-      VersionId: string option }
+      VersionId: string }
 
   type ProjectEntity =
     { Id: string
@@ -35,7 +35,7 @@ module PeojectsRepo =
       repo.GetHead USER_KEY (fun x -> x.Id = projId)
 
     {| Create =
-        fun (createEnty: CreateProjectEntity) ->
+        fun (createEnty: CreateProjectEntity) ->          
           task {
             let enty =
               { Id = createEnty.Id
@@ -45,10 +45,11 @@ module PeojectsRepo =
                 EthProviderUrl = createEnty.EthProviderUrl }
 
             let! result = repo.Insert USER_KEY (fun x -> x.Id = enty.Id) enty
-
+            
             match (result, createEnty.VersionId) with
-            | (Ok proj), (Some versionId) ->
+            | (Ok proj), versionId when versionId <> null ->
               let version: CreateVersionEntity = { Id = versionId }
+              // TODO : Version entity not stored here, though suppose to !
               let! _ = versionRepo.Create proj.Id version
               return errorToConflict result
             | _ -> return errorToConflict result

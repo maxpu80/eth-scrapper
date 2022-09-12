@@ -17,8 +17,9 @@ module internal ProjectVersionsRepo =
 
     {| Create =
         fun projId (ver: CreateVersionEntity) ->
+          let key = getKey projId          
           repo.Insert
-            (getKey projId)
+            key
             (fun x -> x.Id = ver.Id)
             { Id = ver.Id
               Created = System.DateTime.UtcNow }
