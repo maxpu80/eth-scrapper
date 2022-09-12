@@ -77,14 +77,14 @@ GET {{host}}/projects/20/versions/v1/state
 dapr-app-id: {{appId}}
 
 ###
-POST {{host}}/projects/1/versions/v3/pause
+POST {{host}}/projects/20/versions/v1/pause
 dapr-app-id: {{appId}}
 Content-Type: application/json 
 Accept: application/json
 
 
 ###
-POST {{host}}/projects/1/versions/v3/resume
+POST {{host}}/projects/20/versions/v1/resume
 dapr-app-id: {{appId}}
 
 

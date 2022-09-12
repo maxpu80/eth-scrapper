@@ -20,19 +20,25 @@ module RepoResultFilter =
     | :? ObjectResult as objectResult ->
       let objectResultValue = objectResult.Value
 
-      try
-        match FSharpValue.GetUnionFields(objectResultValue, objectResultValue.GetType()) with
-        | x, vals when x.Name = "Error" ->
-          match vals[0] with
-          | :? RepoError as err -> err |> mapRepoError
-          | _ -> 500 |> StatusCodeResult :> IActionResult
-        | x, vals when x.Name = "Ok" -> vals[0] :?> IActionResult
-        | _, vals -> vals |> OkObjectResult :> IActionResult
-      with
-      | _ as err ->
-        printfn "%O" actionResult
-        printfn "========================="
-        printfn "%O" err
+      if
+        objectResultValue <> null
+        && FSharpType.IsUnion(objectResultValue.GetType())
+      then
+        try
+          match FSharpValue.GetUnionFields(objectResultValue, objectResultValue.GetType()) with
+          | x, vals when x.Name = "Error" ->
+            match vals[0] with
+            | :? RepoError as err -> err |> mapRepoError
+            | _ -> 500 |> StatusCodeResult :> IActionResult
+          | x, vals when x.Name = "Ok" -> vals[0] |> OkObjectResult :> IActionResult
+          | _, vals -> vals |> OkObjectResult :> IActionResult
+        with
+        | _ as err ->
+          printfn "%O" actionResult
+          printfn "========================="
+          printfn "%O" err
+          actionResult
+      else
         actionResult
     | _ as actionResult -> actionResult
 
