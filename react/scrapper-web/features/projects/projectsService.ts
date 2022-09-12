@@ -67,7 +67,6 @@ export const getProjects = async (): Promise<ApiResult<Project[]>> => {
             state: {
               updatedAt: new Date().getTime(),
               status: 'pause',
-              block: {},
               requestBlock: {},
             },
           },
@@ -103,7 +102,6 @@ export const projectVersionAction = async (
       updatedAt: new Date().getTime(),
       status: 'continue',
       requestBlock: {},
-      block: {},
     },
   };
 };

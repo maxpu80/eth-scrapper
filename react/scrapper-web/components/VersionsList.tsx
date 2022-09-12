@@ -4,15 +4,19 @@ import { VersionActions } from './VersionActions';
 export interface VersionsListProps {
   versions: ScrapperVersionMap;
   onAction: (id: string, action: VersionAction) => void;
+  ethBlockNumber: number;
 }
 
-export const VersionsList = ({ versions, onAction }: VersionsListProps) => {
+export const VersionsList = ({ versions, onAction, ethBlockNumber }: VersionsListProps) => {
   const renderProgress = (state?: ScrapperState) => {
-    if (state) {
+    if (state && ethBlockNumber) {
       return (
         <>
           <br />
-          <small>progress: {state?.block.to} blocks of --- ~ 10 % </small>
+          <small>
+            progress: {state!.requestBlock.from || 0} blocks of {ethBlockNumber} ~
+            {Math.floor((state!.requestBlock.from || 0) / ethBlockNumber) * 100} %
+          </small>
         </>
       );
     } else {

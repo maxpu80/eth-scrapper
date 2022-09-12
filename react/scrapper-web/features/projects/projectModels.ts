@@ -10,7 +10,6 @@ export interface ScrapperRequestBlock {
 export interface ScrapperState {
   updatedAt: number;
   status: ScrapperStatus;
-  block: ScrapperRequestBlock;
   requestBlock: ScrapperRequestBlock;
 }
 

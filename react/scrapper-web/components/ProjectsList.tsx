@@ -5,9 +5,10 @@ export interface ProjectsListProps {
   projects: ProjectState;
   onRemove: (id: string) => void;
   onVersionAction: (projectId: string, versionId: string, action: VersionAction) => void;
+  ethBlockNumber: number;
 }
 
-const ProjectsList = ({ projects, onRemove, onVersionAction }: ProjectsListProps) => {
+const ProjectsList = ({ projects, onRemove, onVersionAction, ethBlockNumber }: ProjectsListProps) => {
   return (
     <ul>
       {Object.values(projects).map((project) => (
@@ -15,7 +16,8 @@ const ProjectsList = ({ projects, onRemove, onVersionAction }: ProjectsListProps
           {project.name} <a onClick={() => onRemove(project.id)}>remove</a>
           <VersionsList
             onAction={(versionId, action) => onVersionAction(project.id, versionId, action)}
-            versions={project.versions}></VersionsList>
+            versions={project.versions}
+            ethBlockNumber={ethBlockNumber}></VersionsList>
         </li>
       ))}
     </ul>
