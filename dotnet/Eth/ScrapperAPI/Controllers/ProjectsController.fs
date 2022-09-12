@@ -13,11 +13,10 @@ type ProjectsController(env: DaprStoreEnv) =
   let repo = createRepo env
 
   [<HttpPost>]
-  member this.Post(data: ProjectEntity) = repo.Create data
+  member this.Post(data: CreateProjectEntity) = repo.Create data
 
   [<HttpGet>]
   member this.GetAll() = repo.GetAll()
 
   [<HttpDelete("{projectId}")>]
   member this.Delete(projectId: string) = repo.Delete projectId
-

@@ -4,6 +4,14 @@ module PeojectsRepo =
   open Common.DaprState.StateList
   open Common.Repo
 
+  type CreateProjectEntity =
+    { Id: string
+      Name: string
+      Address: string
+      Abi: string
+      EthProviderUrl: string
+      VersionId: string option }
+
   type ProjectEntity =
     { Id: string
       Name: string
@@ -23,9 +31,24 @@ module PeojectsRepo =
       repo.GetHead USER_KEY (fun x -> x.Id = projId)
 
     {| Create =
-        fun enty ->
-          repo.Insert USER_KEY (fun x -> x.Id = enty.Id) enty
-          |> taskMap errorToConflict
+        fun (createEnty: CreateProjectEntity) ->
+          task {
+            let enty =
+              { Id = createEnty.Id
+                Name = createEnty.Name
+                Address = createEnty.Address
+                Abi = createEnty.Abi
+                EthProviderUrl = createEnty.EthProviderUrl }
+
+            let! result = repo.Insert USER_KEY (fun x -> x.Id = enty.Id) enty
+
+            match (result, createEnty.VersionId) with
+            | (Ok proj), (Some versionId) ->
+              let version: CreateVersionEntity = { Id = versionId }
+              let! _ = versionRepo.Create proj.Id version
+              return errorToConflict result
+            | _ -> return errorToConflict result
+          }
        GetAll = fun () -> repo.GetAll USER_KEY |> taskMap Ok
        GetOneWithVersion =
         fun projId verId ->
