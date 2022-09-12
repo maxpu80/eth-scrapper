@@ -34,7 +34,6 @@ export const rehydrateConfigRequest = createAction('app/rehydrateConfigRequest')
 
 function* rehydrateConfig() {
   const ethProviderUrl: string = yield call(getEthProviderUrl);
-  console.log('!!!', ethProviderUrl);
   if (ethProviderUrl !== null) {
     yield put(appSlice.actions.setConfig({ ethProviderUrl }));
     const ethBlockNumber: Result<number, string> = yield call(getEthBlockNumber, ethProviderUrl);

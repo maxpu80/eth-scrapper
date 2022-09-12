@@ -27,7 +27,7 @@ export const VersionsList = ({ versions, onAction, ethBlockNumber }: VersionsLis
     <ul>
       {Object.values(versions).map((x) => (
         <li key={x.id}>
-          {x.name}
+          {x.id}
           <VersionActions
             state={x.state}
             onAction={(action) => onAction(x.id, action)}></VersionActions>

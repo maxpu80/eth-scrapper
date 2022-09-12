@@ -21,7 +21,8 @@ const Projects: NextPage = () => {
   const dispatch = useAppDispatch();
 
   const onAdd = async (data: AddProjectData) => {
-    const result = await createProject(data);
+    // TODO: ethProviderUrl must be set when project created
+    const result = await createProject({ ...data, ethProviderUrl: app.config.ethProviderUrl! });
     switch (result.kind) {
       case 'ok':
         dispatch(add(result.value));

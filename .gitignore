@@ -174,3 +174,4 @@ dist
 .gitconfig
 .elasticsearch-data
 .tye
+.docker-data

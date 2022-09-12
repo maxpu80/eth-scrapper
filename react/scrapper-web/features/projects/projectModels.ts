@@ -13,9 +13,8 @@ export interface ScrapperState {
   requestBlock: ScrapperRequestBlock;
 }
 
-export interface  ScrapperVersion {
+export interface ScrapperVersion {
   id: string;
-  name: string;
   createdAt: number;
   state?: ScrapperState;
 }
@@ -26,10 +25,11 @@ export interface ScrapperVersionMap {
 
 export interface Project {
   id: string;
-  contractAddress: string;
+  address: string;
   name: string;
   abi: string;
   versions: ScrapperVersionMap;
+  ethProviderUrl: string;
 }
 
 export type CreateProjectError = ApiError | { kind: 'get-abi-error' };
