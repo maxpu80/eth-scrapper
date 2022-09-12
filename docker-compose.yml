@@ -99,6 +99,32 @@ services:
       - scrapper-elastic-store-actor
     network_mode: "service:scrapper-elastic-store-actor"    
   ############################
+  # scrapper-actor + Dapr sidecar
+  ############################
+  scrapper-actor:
+    build: 
+      context: ./node/scrapper-actor
+      dockerfile: Dockerfile         
+      args:
+        - PORT=3002
+    depends_on:
+      - redis
+      - placement
+    networks:
+      - dapr-net
+  scrapper-actor-dapr:
+    image: "daprio/daprd:1.8.4"
+    command: ["./daprd",
+     "-app-id", "scrapper-actor",
+     "-app-port", "3002",
+     "-placement-host-address", "placement:50006",
+     "-components-path", "/components"]
+    volumes:
+        - "./docker-compose-components/:/components"
+    depends_on:
+      - scrapper-actor
+    network_mode: "service:scrapper-actor"    
+  ############################
   # docker-scrapper-api + Dapr sidecar
   ############################
   scrapper-api:

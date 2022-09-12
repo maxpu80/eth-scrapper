@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start": "nodemon",
-    "start:dapr": "dapr run --app-port 5002 --app-id scrapper-actor --components-path ../../components --dapr-http-port 3502 -- npm run start"
+    "start:dapr": "dapr run --app-port 5002 --app-id scrapper-actor --components-path ../../components --dapr-http-port 3502 -- npm run start",
+    "build": "tsc --project tsconfig.json"
   },
   "dependencies": {
     "@dapr/dapr": "^2.3.0",
