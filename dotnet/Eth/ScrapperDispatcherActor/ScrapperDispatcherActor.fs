@@ -9,6 +9,7 @@ module ScrapperDispatcherActor =
   open ScrapperModels
   open Microsoft.Extensions.Logging
   open Common.DaprActor
+  open Common.DaprActor.ActorResult
   open System
 
   type BlockRangeDTO =
@@ -72,9 +73,10 @@ module ScrapperDispatcherActor =
           let! state = stateManager.Get()
 
           match state with
-          | Some _ ->
-            logger.LogError("Try to start version which already started", data)
-            return false
+          | Some state ->
+            let error = "Try to start version which already started"
+            logger.LogError(error, data)
+            return (state, error) |> StateConflict |> Error
           | None ->
             let scrapperRequest: ScrapperRequest =
               { EthProviderUrl = data.EthProviderUrl
@@ -94,7 +96,7 @@ module ScrapperDispatcherActor =
 
             do! stateManager.Set state
 
-            return true
+            return state |> Ok
         }
 
       member this.Continue data =
@@ -106,8 +108,9 @@ module ScrapperDispatcherActor =
 
           match state with
           | Some state when state.Status = Status.Pause ->
-            logger.LogWarning("Actor in paused state, skip continue")
-            return false
+            let error = "Actor in paused state, skip continue"
+            logger.LogDebug(error)
+            return (state, error) |> StateConflict |> Error
           | _ ->
             let blockRange = nextBlockRangeCalc data.Result
 
@@ -139,7 +142,7 @@ module ScrapperDispatcherActor =
 
               do! stateManager.Set state
 
-              return true
+              return state |> Ok
 
             | true ->
 
@@ -153,9 +156,9 @@ module ScrapperDispatcherActor =
 
               do! stateManager.Set state
 
-              let! _ = me.Schedule()
+              let! result = me.Schedule()
 
-              return false
+              return result
         }
 
 
@@ -164,18 +167,22 @@ module ScrapperDispatcherActor =
           let! state = stateManager.Get()
 
           match state with
-          | Some state when
-            state.Status = Status.Continue
-            || state.Status = Status.Schedule
-            ->
-            let state =
-              { state with
-                  Status = Status.Pause
-                  Date = epoch () }
+          | Some state ->
+            if state.Status = Status.Continue
+               || state.Status = Status.Schedule then
+              let state =
+                { state with
+                    Status = Status.Pause
+                    Date = epoch () }
 
-            do! stateManager.Set state
-            return true
-          | _ -> return false
+              do! stateManager.Set state
+
+              return state |> Ok
+            else
+              let error = "Actor in a wrong state"
+              logger.LogDebug(error)
+              return (state, error) |> StateConflict |> Error
+          | None -> return StateNotFound |> Error
 
         }
 
@@ -184,31 +191,32 @@ module ScrapperDispatcherActor =
           let! state = stateManager.Get()
 
           match state with
-          | Some state when
-            state.Status = Status.Pause
-            || state.Status = Status.Finish
-            ->
+          | Some state ->
+            if state.Status = Status.Pause
+               || state.Status = Status.Finish then
 
-            let updatedState =
-              { state with
-                  Status = Status.Continue
-                  Date = epoch () }
+              let updatedState =
+                { state with
+                    Status = Status.Continue
+                    Date = epoch () }
 
-            logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
+              logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
 
-            do! runScrapper this.ProxyFactory this.Id updatedState.Request
+              do! runScrapper this.ProxyFactory this.Id updatedState.Request
 
-            do! stateManager.Set updatedState
-            return true
+              do! stateManager.Set updatedState
+              return updatedState |> Ok
+            else
+              let error = "Actor in a wrong state"
+              logger.LogDebug(error)
+              return (state, error) |> StateConflict |> Error
           | _ ->
             logger.LogWarning("Resume state not found or Continue")
-            return false
+            return StateNotFound |> Error
 
         }
 
-      member this.State() =
-        stateManager.Get()
-        |> ActorResult.toActorOptionResult
+      member this.State() = stateManager.Get()
 
       member this.Reset() = stateManager.Remove()
 
@@ -220,21 +228,32 @@ module ScrapperDispatcherActor =
           let! state = stateManager.Get()
 
           match state with
-          | Some state when state.Status = Status.Finish ->
-            logger.LogInformation("Run schedule with {@state}", state)
+          | Some state ->
+            if state.Status = Status.Finish then
+              logger.LogInformation("Run schedule with {@state}", state)
 
-            let updatedState =
-              { state with
-                  Status = Status.Schedule
-                  Date = epoch () }
+              let updatedState =
+                { state with
+                    Status = Status.Schedule
+                    Date = epoch () }
 
-            do! stateManager.Set updatedState
+              do! stateManager.Set updatedState
 
-            let! _ =
-              this.RegisterTimerAsync(SCHEDULE_TIMER_NAME, "Resume", [||], TimeSpan.FromSeconds(dueTime), TimeSpan.Zero)
+              let! _ =
+                this.RegisterTimerAsync(
+                  SCHEDULE_TIMER_NAME,
+                  "Resume",
+                  [||],
+                  TimeSpan.FromSeconds(dueTime),
+                  TimeSpan.Zero
+                )
 
-            return true
-          | _ as state ->
-            logger.LogWarning("Can't schedule, wrong state {@state}", state)
-            return false
+              return state |> Ok
+            else
+              let error = "Can't schedule, wrong state {@state}"
+              logger.LogDebug("Can't schedule, wrong state {@state}", state)
+              return (state, error) |> StateConflict |> Error
+          | None ->
+            logger.LogDebug("Can't schedule, wrong state {@state}", state)
+            return StateNotFound |> Error
         }

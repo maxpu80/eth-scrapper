@@ -7,6 +7,17 @@ open Scrapper.Repo.PeojectsRepo
 open ScrapperAPI.Services
 open ScrapperDispatcherProxy
 open Common.DaprAPI
+open ScrapperModels
+
+module private DTO =
+
+  let mapScrapperDispatcherActorResult (result: ScrapperDispatcherActorResult) =
+    match result with
+    | Ok state -> state |> OkObjectResult :> IActionResult
+    | Error err ->
+      match err with
+      | StateConflict (state, error) -> ConflictObjectResult({| State = state; Error = error |}) :> IActionResult
+      | StateNotFound -> NotFoundObjectResult() :> IActionResult
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
@@ -51,19 +62,31 @@ type ProjectVersionssController(env: DaprStoreEnv) =
     task {
       let! result = ScrapperDispatcherProxy.state projectId versionId
 
-      match result.Data with
+      match result with
       | Some result -> return result |> this.Ok :> IActionResult
       | None -> return NotFoundObjectResult() :> IActionResult
     }
 
   [<HttpPost("{versionId}/pause")>]
   member this.Pause(projectId: string, versionId: string) =
-    ScrapperDispatcherProxy.pause projectId versionId
+    task {
+      let! result = ScrapperDispatcherProxy.pause projectId versionId
+      return DTO.mapScrapperDispatcherActorResult result
+    }
 
   [<HttpPost("{versionId}/resume")>]
   member this.Resume(projectId: string, versionId: string) =
-    ScrapperDispatcherProxy.resume projectId versionId
+    task {
+      let! result = ScrapperDispatcherProxy.resume projectId versionId
+      return DTO.mapScrapperDispatcherActorResult result
+    }
 
   [<HttpPost("{versionId}/reset")>]
   member this.Reset(projectId: string, versionId: string) =
-    ScrapperDispatcherProxy.reset projectId versionId
+    task {
+      let! result = ScrapperDispatcherProxy.reset projectId versionId
+
+      match result with
+      | true -> return this.NoContent() :> IActionResult
+      | false -> return this.NotFound() :> IActionResult
+    }

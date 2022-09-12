@@ -66,13 +66,13 @@ module ScrapperDispatcherProxy =
         let! result = actor.Start data
 
         match result with
-        | true ->
+        | Ok _ ->
           let! result = state projectId ver.Id
 
-          match result.Data with
+          match result with
           | Some state -> return Ok state
           | None -> return AfterActorStartStateNotFound |> Error
-        | false -> return ActorStartFailure |> Error
+        | Error err -> return ActorStartFailure |> Error
       | Error err -> return err |> RepoError |> Error
 
     }

@@ -6,7 +6,11 @@ module ActorResult =
 
   type ActorOptionResult<'a> = { Data: 'a option }
 
-  let actorOptionResultNone = { Data = None }
+  let actorOptionResultSome data = { Data = Some data }
+
+  let actorOptionResultNone () = { Data = None }
+
+  let actorOptionResult data = { Data = data }
 
   let toActorOptionResult<'a> (t: Task<'a option>) =
     task {

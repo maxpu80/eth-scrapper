@@ -28,12 +28,18 @@ type State =
     Date: int64
     FinishDate: int64 option }
 
+type ScrapperDispatcherActorError =
+  | StateConflict of State * string
+  | StateNotFound
+
+type ScrapperDispatcherActorResult = Result<State, ScrapperDispatcherActorError>
+
 type IScrapperDispatcherActor =
   inherit IActor
-  abstract Start: data: StartData -> Task<bool>
-  abstract Continue: data: ContinueData -> Task<bool>
-  abstract Pause: unit -> Task<bool>
-  abstract Resume: unit -> Task<bool>
-  abstract State: unit -> Task<ActorOptionResult<State>>
+  abstract Start: data: StartData -> Task<ScrapperDispatcherActorResult>
+  abstract Continue: data: ContinueData -> Task<ScrapperDispatcherActorResult>
+  abstract Pause: unit -> Task<ScrapperDispatcherActorResult>
+  abstract Resume: unit -> Task<ScrapperDispatcherActorResult>
+  abstract State: unit -> Task<State option>
   abstract Reset: unit -> Task<bool>
-  abstract Schedule: unit -> Task<bool>
+  abstract Schedule: unit -> Task<ScrapperDispatcherActorResult>
