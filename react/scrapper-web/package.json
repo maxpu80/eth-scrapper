@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env BASE_URL='http://localhost:6001 && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -11,6 +11,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^1.8.5",
     "axios": "^0.27.2",
+    "cross-env": "^7.0.3",
     "formik": "^2.2.9",
     "lodash": "^4.17.21",
     "next": "12.3.0",

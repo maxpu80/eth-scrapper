@@ -55,6 +55,12 @@ const Projects: NextPage = () => {
   };
 
   const onVersionAction = async (projectId: string, versionId: string, action: VersionAction) => {
+    if (action === 'reset') {
+      if (!confirm('Reset scrapper ? All progress will be lost.')) {
+        console.log('canceled');
+        return;
+      }
+    }
     const result = await projectVersionAction(projectId, versionId, action);
     switch (result.kind) {
       case 'ok':
