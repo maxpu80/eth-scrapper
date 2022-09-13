@@ -7,10 +7,14 @@ export interface ScrapperRequestBlock {
   to?: number;
 }
 
+export interface ScrapperRequest {
+  blockRange: ScrapperRequestBlock;
+}
+
 export interface ScrapperState {
-  updatedAt: number;
+  date: number;
   status: ScrapperStatus;
-  requestBlock: ScrapperRequestBlock;
+  request: ScrapperRequest;
 }
 
 export interface ScrapperVersion {

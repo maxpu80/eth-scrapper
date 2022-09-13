@@ -72,11 +72,13 @@ export const createProject = async (data: AddProjectData): Promise<CreateProject
 };
 
 export const getProjects = async (): Promise<ApiResult<Project[]>> => {
-  const result = await dataAccess.get<{ project: Project; versions: ScrapperVersion[] }[]>('projects');
+  const result = await dataAccess.get<
+    { project: Project; versions: { version: ScrapperVersion; state: ScrapperState }[] }[]
+  >('projects');
   if (result.kind === 'ok') {
     const projects = result.value.map((x) => ({
       ...x.project,
-      versions: Object.fromEntries(x.versions.map((e) => [e.id, e])),
+      versions: Object.fromEntries(x.versions.map((e) => [e.version.id, { ...e.version, state: e.state }])),
     }));
     return { kind: 'ok', value: projects };
   } else {

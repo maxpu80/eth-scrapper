@@ -94,7 +94,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
 
   private mapPublishPayload(data: Data, result: Result) {
     const actorId = this.getActorId().getId();
-    const indexId = `${data.contractAddress}_${actorId}`.toLowerCase();
+    const indexId = actorId.toLowerCase();
     return {
       contractAddress: data.contractAddress,
       abi: data.abi,
