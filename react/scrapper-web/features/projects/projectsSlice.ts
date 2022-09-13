@@ -1,11 +1,11 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../../app/store';
-import { put, takeEvery, call } from 'redux-saga/effects';
-import { Project, ProjectState, ScrapperState, ScrapperVersion, VersionAction } from './projectModels';
-import { getProjects } from './projectsService';
-import Projects from '../../pages';
-import { ApiResult } from '../sharedModels';
 import { omit, set } from 'lodash';
+import { eventChannel } from 'redux-saga';
+import { call, put, takeEvery } from 'redux-saga/effects';
+import { RootState } from '../../app/store';
+import { ApiResult } from '../sharedModels';
+import { Project, ProjectState, ScrapperState, VersionAction } from './projectModels';
+import { getProjects } from './projectsService';
 
 export interface AddActionPayload {
   id: string;
@@ -41,6 +41,9 @@ export const projectsSlice = createSlice({
         action.payload.state,
       );
     },
+    stateChanges: (state, action: PayloadAction<ProjectState>) => {
+      return action.payload;
+    },
   },
 });
 
@@ -50,6 +53,7 @@ export const { add, remove, setVersionState } = projectsSlice.actions;
 
 export default projectsSlice.reducer;
 
+//
 export const fetchAllRequest = createAction('projects/fetchAllRequest');
 
 function* fetchAll() {
@@ -60,6 +64,31 @@ function* fetchAll() {
   }
 }
 
+//
+export const startQueryStateChanges = createAction<number>('projects/startQueryStateChanges');
+
+function queryStateChangesChannel(interval: number) {
+  return eventChannel((emitter) => {
+    const iv = setInterval(() => {
+      emitter(true);
+    }, interval);
+    // The subscriber must return an unsubscribe function
+    return () => {
+      clearInterval(iv);
+    };
+  });
+}
+
 export function* projectsSaga() {
   yield takeEvery(fetchAllRequest.toString(), fetchAll);
+  //@ts-ignore
+  const stateChangesChannel: any = yield call(queryStateChangesChannel, 1000 * 10);
+  yield takeEvery(stateChangesChannel, function* () {
+    yield;
+    const projects: ApiResult<Project[]> = yield call(getProjects);
+    if (projects.kind === 'ok') {
+      const data = Object.fromEntries(projects.value.map((x) => [x.id, x]));
+      yield put(projectsSlice.actions.stateChanges(data));
+    }
+  });
 }
