@@ -30,6 +30,8 @@ services:
   #     - dapr-net 
   elasticsearch:
     image: "elasticsearch:7.17.6"
+    networks:
+      - dapr-net 
     ports:      
       - 9200:9200
       - 9300:9300
@@ -42,6 +44,8 @@ services:
     image: "kibana:7.17.6"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200     
+    networks:
+      - dapr-net 
     ports:      
       - 5601:5601
     depends_on:

@@ -37,6 +37,20 @@ Accept: application/json
 
 ###
 
+POST {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/pause
+dapr-app-id: {{appId}}
+Content-Type: application/json 
+Accept: application/json
+
+###
+
+POST {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/resume
+dapr-app-id: {{appId}}
+Content-Type: application/json 
+Accept: application/json
+
+###
+
 POST {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/reset
 dapr-app-id: {{appId}}
 Content-Type: application/json 
