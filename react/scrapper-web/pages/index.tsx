@@ -1,10 +1,11 @@
 import type { NextPage } from 'next';
+import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import AddProject from '../components/AddProject';
 import { AppConfig } from '../components/AppConfig';
 import ProjectsList from '../components/ProjectsList';
 import { getEthBlockNumber, storeEthProviderUrl } from '../features/app/appService';
-import { selectApp, setEthBlockNumber, setEthProviderUrl } from '../features/app/appSlice';
+import { rehydrateConfigRequest, selectApp, setEthBlockNumber, setEthProviderUrl } from '../features/app/appSlice';
 import { VersionAction } from '../features/projects/projectModels';
 import {
   AddProjectData,
@@ -12,13 +13,24 @@ import {
   projectVersionAction,
   removeProject,
 } from '../features/projects/projectsService';
-import { add, remove, selectProjects, setVersionState } from '../features/projects/projectsSlice';
+import { add, fetchAllRequest, remove, selectProjects, setVersionState } from '../features/projects/projectsSlice';
+
+let started = false;
 
 const Projects: NextPage = () => {
   const projects = useAppSelector(selectProjects);
   const app = useAppSelector(selectApp);
 
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!started) {
+      dispatch(fetchAllRequest());
+      dispatch(rehydrateConfigRequest());
+      setInterval(() => console.log('interval'), 5000);
+    }
+    started = true;
+  });
 
   const onAdd = async (data: AddProjectData) => {
     // TODO: ethProviderUrl must be set when project created
