@@ -1,9 +1,7 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { omit, set } from 'lodash';
-import { eventChannel } from 'redux-saga';
 import { call, put, takeEvery } from 'redux-saga/effects';
 import { RootState } from '../../app/store';
-import { ApiResult } from '../sharedModels';
 import { Project, ProjectState, ScrapperState, VersionAction } from './projectModels';
 import { getProjects } from './projectsService';
 
@@ -56,39 +54,31 @@ export default projectsSlice.reducer;
 //
 export const fetchAllRequest = createAction('projects/fetchAllRequest');
 
-function* fetchAll() {
-  const projects: ApiResult<Project[]> = yield call(getProjects);
+async function fetchProjects() {
+  const projects = await getProjects();
   if (projects.kind === 'ok') {
     const data = Object.fromEntries(projects.value.map((x) => [x.id, x]));
-    yield put(projectsSlice.actions.fetchAllSuccess(data));
+    return data;
+  } else {
+    return null;
   }
 }
 
-//
-export const startQueryStateChanges = createAction<number>('projects/startQueryStateChanges');
-
-function queryStateChangesChannel(interval: number) {
-  return eventChannel((emitter) => {
-    const iv = setInterval(() => {
-      emitter(true);
-    }, interval);
-    // The subscriber must return an unsubscribe function
-    return () => {
-      clearInterval(iv);
-    };
-  });
+function* fetchAll() {
+  const projects: ProjectState = yield call(fetchProjects);
+  yield put(projectsSlice.actions.fetchAllSuccess(projects));
 }
 
+//
+export const fetchStateChangesRequest = createAction('projects/fetchStateChangesRequest');
+
+function* fetchStateChanges() {
+  const projects: ProjectState = yield call(fetchProjects);
+  yield put(projectsSlice.actions.stateChanges(projects));
+}
+
+//
 export function* projectsSaga() {
   yield takeEvery(fetchAllRequest.toString(), fetchAll);
-  //@ts-ignore
-  const stateChangesChannel: any = yield call(queryStateChangesChannel, 1000 * 10);
-  yield takeEvery(stateChangesChannel, function* () {
-    yield;
-    const projects: ApiResult<Project[]> = yield call(getProjects);
-    if (projects.kind === 'ok') {
-      const data = Object.fromEntries(projects.value.map((x) => [x.id, x]));
-      yield put(projectsSlice.actions.stateChanges(data));
-    }
-  });
+  yield takeEvery(fetchStateChangesRequest.toString(), fetchStateChanges);
 }

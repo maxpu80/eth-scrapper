@@ -27,7 +27,6 @@ const Projects: NextPage = () => {
     if (!started) {
       dispatch(fetchAllRequest());
       dispatch(rehydrateConfigRequest());
-      setInterval(() => console.log('interval'), 5000);
     }
     started = true;
   });

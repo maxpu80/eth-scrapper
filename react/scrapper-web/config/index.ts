@@ -5,6 +5,7 @@ const appConfig = {
     baseUrl: 'http://localhost:6001',
     daprAppId: 'scrapper-api',
   } as DataAccessConfig,
+  stateChangesQueryInterval: 60 * 1000,
 };
 
 export default appConfig;
