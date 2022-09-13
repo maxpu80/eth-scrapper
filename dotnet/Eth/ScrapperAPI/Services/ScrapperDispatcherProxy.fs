@@ -8,6 +8,7 @@ module ScrapperDispatcherProxy =
   open Scrapper.Repo.PeojectsRepo
   open Common.DaprState
   open Common.Repo
+  open Common.Utils
 
   let private getActorId contractAddress versionId =
     let actorId = $"{contractAddress}_{versionId}"
@@ -53,18 +54,16 @@ module ScrapperDispatcherProxy =
             task {
               let! st = state proj.Project.Address v.Id
               return { Version = v; State = st }
-            }
-            |> Async.AwaitTask)
-          |> Async.Parallel
+            })
+          |> Task.all
 
         let result: ProjectWithVresionsAndState =
           { Project = proj.Project
-            Versions = result |> Array.toList }
+            Versions = result }
 
         return result
-      }
-      |> Async.AwaitTask)
-    |> Async.Parallel
+      })
+    |> Task.all
 
 
   type StartError =

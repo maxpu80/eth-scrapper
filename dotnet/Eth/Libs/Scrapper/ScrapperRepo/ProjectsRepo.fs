@@ -6,6 +6,7 @@ open ScrapperModels
 module PeojectsRepo =
   open Common.DaprState.StateList
   open Common.Repo
+  open Common.Utils
 
   type CreateProjectEntity =
     { Name: string
@@ -88,10 +89,9 @@ module PeojectsRepo =
                   match result with
                   | Ok result -> return { Project = proj; Versions = result }
                   | Error _ -> return { Project = proj; Versions = [] }
-                }
-                |> Async.AwaitTask)
+                })
 
-            let! result = versions |> Async.Parallel
+            let! result = versions |> Task.all
 
             return result |> Ok
           }

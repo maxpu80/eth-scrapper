@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Common\DaprState\DaprState.fsproj" />
     <ProjectReference Include="..\..\Common\Repo\Repo.fsproj" />
+    <ProjectReference Include="..\..\Common\Utils\Utils.fsproj" />
     <ProjectReference Include="..\ScrapperModels\ScrapperModels.fsproj" />
   </ItemGroup>
 

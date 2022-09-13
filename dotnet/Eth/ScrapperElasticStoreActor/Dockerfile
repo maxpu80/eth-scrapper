@@ -7,8 +7,9 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:${NET_IMAGE} AS build
 WORKDIR /src
 
-COPY ["Libs/Common/DaprActor/", "Libs/Common/DaprActor/"]
-COPY ["Libs/Scrapper/ScrapperModels/", "Libs/Scrapper/ScrapperModels/"]
+# COPY ["Libs/Common/DaprActor/", "Libs/Common/DaprActor/"]
+# COPY ["Libs/Scrapper/ScrapperModels/", "Libs/Scrapper/ScrapperModels/"]
+COPY ["Libs/", "./Libs/"]
 COPY ["ScrapperElasticStoreActor/", "ScrapperElasticStoreActor/"]
 COPY ["Eth.sln", "Eth.sln"]
 RUN dotnet restore ScrapperElasticStoreActor

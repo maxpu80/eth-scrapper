@@ -23,13 +23,9 @@ type ProjectsController(env: DaprStoreEnv) =
 
       match result with
       | Ok result ->
-        let result = result |> Array.toList
         let! result = result |> collectProjectVersionsWithState
 
-        let result =
-          result
-          |> Array.toList
-          |> DTO.mapProjectsWithViewStates
+        let result = result |> DTO.mapProjectsWithViewStates
 
         return result |> Ok
       | Error err -> return err |> Error

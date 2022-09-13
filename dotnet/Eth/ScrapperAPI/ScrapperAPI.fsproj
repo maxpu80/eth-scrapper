@@ -17,6 +17,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Libs\Common\DaprAPI\DaprAPI.fsproj" />
 		<ProjectReference Include="..\Libs\Common\DaprState\DaprState.fsproj" />
+		<ProjectReference Include="..\Libs\Common\Utils\Utils.fsproj" />
 		<ProjectReference Include="..\Libs\Scrapper\ScrapperModels\ScrapperModels.fsproj" />
 		<ProjectReference Include="..\Libs\Scrapper\ScrapperRepo\ScrapperRepo.fsproj" />
 	</ItemGroup>

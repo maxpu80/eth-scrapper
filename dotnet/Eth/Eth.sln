@@ -25,6 +25,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Repo", "Libs\Common\Repo\Re
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "ScrapperElasticStoreActor", "ScrapperElasticStoreActor\ScrapperElasticStoreActor.fsproj", "{1B9BF615-9D9B-4C1F-B830-FD58990C62E3}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Utils", "Libs\Common\Utils\Utils.fsproj", "{78DCE15E-E1F0-49EE-A5FA-297EEBB8AB1B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{1B9BF615-9D9B-4C1F-B830-FD58990C62E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B9BF615-9D9B-4C1F-B830-FD58990C62E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B9BF615-9D9B-4C1F-B830-FD58990C62E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78DCE15E-E1F0-49EE-A5FA-297EEBB8AB1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78DCE15E-E1F0-49EE-A5FA-297EEBB8AB1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78DCE15E-E1F0-49EE-A5FA-297EEBB8AB1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78DCE15E-E1F0-49EE-A5FA-297EEBB8AB1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
