@@ -8,8 +8,7 @@ module PeojectsRepo =
   open Common.Repo
 
   type CreateProjectEntity =
-    { Id: string
-      Name: string
+    { Name: string
       Address: string
       Abi: string
       EthProviderUrl: string
@@ -49,7 +48,7 @@ module PeojectsRepo =
         fun (createEnty: CreateProjectEntity) ->
           task {
             let enty =
-              { Id = createEnty.Id
+              { Id = createEnty.Address
                 Name = createEnty.Name
                 Address = createEnty.Address
                 Abi = createEnty.Abi
