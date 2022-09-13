@@ -42,6 +42,31 @@ module ScrapperDispatcherProxy =
 
     actor.Reset()
 
+  let collectProjectVersionsWithState (projects: ProjectWithVresions list) =
+
+    projects
+    |> List.map (fun proj ->
+      task {
+        let! result =
+          proj.Versions
+          |> List.map (fun v ->
+            task {
+              let! st = state proj.Project.Address v.Id
+              return { Version = v; State = st }
+            }
+            |> Async.AwaitTask)
+          |> Async.Parallel
+
+        let result: ProjectWithVresionsAndState =
+          { Project = proj.Project
+            Versions = result |> Array.toList }
+
+        return result
+      }
+      |> Async.AwaitTask)
+    |> Async.Parallel
+
+
   type StartError =
     | ActorStartFailure
     | AfterActorStartStateNotFound

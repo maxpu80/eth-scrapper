@@ -8,6 +8,7 @@
 		<None Include="read.me" />
 		<Compile Include="APIError.fs" />
 		<Compile Include="Services\ScrapperDispatcherProxy.fs" />
+		<Compile Include="Controllers\DTO.fs" />
 		<Compile Include="Controllers\ProjectVersionsController.fs" />
 		<Compile Include="Controllers\ProjectsController.fs" />
 		<Compile Include="Program.fs" />

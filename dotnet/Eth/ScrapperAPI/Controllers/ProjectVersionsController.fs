@@ -4,41 +4,8 @@ open Microsoft.AspNetCore.Mvc
 open Common.DaprState
 open Scrapper.Repo
 open Scrapper.Repo.PeojectsRepo
-open ScrapperAPI.Services
-open ScrapperDispatcherProxy
+open ScrapperAPI.Services.ScrapperDispatcherProxy
 open Common.DaprAPI
-open ScrapperModels
-open Microsoft.Extensions.Logging
-
-module private DTO =
-
-  let mapState (state: State) =
-    {| request =
-        {| state.Request with
-             BlockRange =
-               {| From = state.Request.BlockRange.From |> Option.toNullable
-                  To = state.Request.BlockRange.To |> Option.toNullable |} |}
-       date = state.Date
-       finishDate = state.FinishDate
-       status =
-        match state.Status with
-        | Status.Continue -> "continue"
-        | Status.Pause -> "pause"
-        | Status.Finish -> "finish"
-        | Status.Schedule -> "schedule" |}
-
-  let mapScrapperDispatcherActorResult (result: ScrapperDispatcherActorResult) =
-    match result with
-    | Ok state -> state |> mapState |> OkObjectResult :> IActionResult
-    | Error err ->
-      match err with
-      | StateConflict (state, error) ->
-        ConflictObjectResult(
-          {| State = (mapState state)
-             Error = error |}
-        )
-        :> IActionResult
-      | StateNotFound -> NotFoundObjectResult() :> IActionResult
 
 [<ApiController>]
 [<Route("projects/{projectId}/versions")>]
@@ -58,7 +25,7 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   [<HttpPost("{versionId}/start")>]
   member this.Start(projectId: string, versionId: string) =
     task {
-      let! result = ScrapperDispatcherProxy.start env projectId versionId
+      let! result = start env projectId versionId
 
       match result with
       | Error err ->
@@ -81,7 +48,7 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   [<HttpGet("{versionId}/state")>]
   member this.State(projectId: string, versionId: string) =
     task {
-      let! result = ScrapperDispatcherProxy.state projectId versionId
+      let! result = state projectId versionId
 
       match result with
       | Some result -> return result |> DTO.mapState |> this.Ok :> IActionResult
@@ -91,21 +58,21 @@ type ProjectVersionssController(env: DaprStoreEnv) =
   [<HttpPost("{versionId}/pause")>]
   member this.Pause(projectId: string, versionId: string) =
     task {
-      let! result = ScrapperDispatcherProxy.pause projectId versionId
+      let! result = pause projectId versionId
       return DTO.mapScrapperDispatcherActorResult result
     }
 
   [<HttpPost("{versionId}/resume")>]
   member this.Resume(projectId: string, versionId: string) =
     task {
-      let! result = ScrapperDispatcherProxy.resume projectId versionId
+      let! result = resume projectId versionId
       return DTO.mapScrapperDispatcherActorResult result
     }
 
   [<HttpPost("{versionId}/reset")>]
   member this.Reset(projectId: string, versionId: string) =
     task {
-      let! result = ScrapperDispatcherProxy.reset projectId versionId
+      let! result = reset projectId versionId
 
       match result with
       | true -> return NoContentResult() :> IActionResult

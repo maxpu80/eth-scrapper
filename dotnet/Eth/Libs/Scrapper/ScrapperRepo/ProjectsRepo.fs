@@ -1,5 +1,8 @@
 ﻿namespace Scrapper.Repo
 
+open ScrapperModels
+
+
 module PeojectsRepo =
   open Common.DaprState.StateList
   open Common.Repo
@@ -18,6 +21,14 @@ module PeojectsRepo =
       Address: string
       Abi: string
       EthProviderUrl: string }
+
+  type VersionWithState =
+    { Version: VersionEntity
+      State: State option }
+
+  type ProjectWithVresionsAndState =
+    { Project: ProjectEntity
+      Versions: VersionWithState list }
 
   type ProjectWithVresions =
     { Project: ProjectEntity
