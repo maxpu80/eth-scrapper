@@ -14,6 +14,20 @@ export interface AddProjectData {
   contractAddress: string;
 }
 
+type ProjectVersionStateDTO = { project: Project; versions: { version: ScrapperVersion; state: ScrapperState }[] };
+
+const mapProjectVersionStateDTO = (dto: ProjectVersionStateDTO) => ({
+  ...dto.project,
+  versions: Object.fromEntries(dto.versions.map((e) => [e.version.id, { ...e.version, state: e.state }])),
+});
+
+type ProjectVersionDTO = { project: Project; versions: ScrapperVersion[] };
+
+const mapProjectVersionDTO = (dto: ProjectVersionDTO) => ({
+  ...dto.project,
+  versions: Object.fromEntries(dto.versions.map((e) => [e.id, e])),
+});
+
 const getAbi = async (contractAddress: string): Promise<ApiResult<string, CreateProjectError>> => {
   const abiUrl = `https://api.etherscan.io/api?module=contract&action=getabi&address=${contractAddress}`;
   const abiResult = await axios.get(abiUrl);
@@ -40,14 +54,11 @@ export const createProject = async (data: AddProjectData): Promise<CreateProject
       ethProviderUrl: data.ethProviderUrl,
       versionId: 'v1',
     } as Partial<Project>;
-    const projectResult = await dataAccess.post<Project & { versions: ScrapperVersion[] }>('projects', body);
+    const projectResult = await dataAccess.post<ProjectVersionDTO>('projects', body);
     if (projectResult.kind === 'ok') {
       return {
         kind: 'ok',
-        value: {
-          ...projectResult.value,
-          versions: Object.fromEntries(projectResult.value.versions.map((x) => [x.id, x])),
-        },
+        value: mapProjectVersionDTO(projectResult.value),
       };
     } else {
       return projectResult;
@@ -72,14 +83,9 @@ export const createProject = async (data: AddProjectData): Promise<CreateProject
 };
 
 export const getProjects = async (): Promise<ApiResult<Project[]>> => {
-  const result = await dataAccess.get<
-    { project: Project; versions: { version: ScrapperVersion; state: ScrapperState }[] }[]
-  >('projects');
+  const result = await dataAccess.get<ProjectVersionStateDTO[]>('projects');
   if (result.kind === 'ok') {
-    const projects = result.value.map((x) => ({
-      ...x.project,
-      versions: Object.fromEntries(x.versions.map((e) => [e.version.id, { ...e.version, state: e.state }])),
-    }));
+    const projects = result.value.map(mapProjectVersionStateDTO);
     return { kind: 'ok', value: projects };
   } else {
     return result;

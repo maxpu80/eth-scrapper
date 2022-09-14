@@ -82,6 +82,6 @@ export function* appSaga() {
   yield takeEvery(rehydrateConfigRequest.toString(), rehydrateConfig);
   yield takeEvery(blockNumberQuery.toString(), fetchBlockNumber);
   //@ts-ignore
-  const stateChangesChannel = yield call(queryStateChangesChannel, appConfig.stateChangesQueryInterval);
-  yield takeEvery(stateChangesChannel, queryStateChanges);
+  // const stateChangesChannel = yield call(queryStateChangesChannel, appConfig.stateChangesQueryInterval);
+  // yield takeEvery(stateChangesChannel, queryStateChanges);
 }

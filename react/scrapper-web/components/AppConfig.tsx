@@ -20,7 +20,7 @@ export const AppConfig = ({ onSetProviderUrl }: AppConfigProps) => {
     <>
       <h2>Config</h2>
       <Formik
-        initialValues={{ ethProviderUrl: 'https://mainnet.infura.io/v3/11f741ef96ad4ce5b963ea0ba8d9703b' }}
+        initialValues={{ ethProviderUrl: '' }}
         onSubmit={async (values, { setSubmitting, setFieldValue, setFieldError, setFieldTouched }) => {
           const result = await onSetProviderUrl(values.ethProviderUrl);
           if (result.kind === 'ok') {

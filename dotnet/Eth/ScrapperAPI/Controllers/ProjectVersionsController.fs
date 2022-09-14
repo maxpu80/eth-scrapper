@@ -4,7 +4,7 @@ open Microsoft.AspNetCore.Mvc
 open Common.DaprState
 open Scrapper.Repo
 open Scrapper.Repo.PeojectsRepo
-open ScrapperAPI.Services.ScrapperDispatcherProxy
+open ScrapperAPI.Services.ScrapperDispatcherService
 open Common.DaprAPI
 
 [<ApiController>]

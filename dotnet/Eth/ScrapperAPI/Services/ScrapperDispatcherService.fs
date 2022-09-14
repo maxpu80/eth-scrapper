@@ -1,6 +1,6 @@
 ﻿namespace ScrapperAPI.Services
 
-module ScrapperDispatcherProxy =
+module ScrapperDispatcherService =
 
   open Dapr.Actors
   open Dapr.Actors.Client
@@ -52,8 +52,11 @@ module ScrapperDispatcherProxy =
           proj.Versions
           |> List.map (fun v ->
             task {
-              let! st = state proj.Project.Address v.Id
-              return { Version = v; State = st }
+              try
+                let! st = state proj.Project.Address v.Id
+                return { Version = v; State = st }
+              with
+              | _ -> return { Version = v; State = None }
             })
           |> Task.all
 

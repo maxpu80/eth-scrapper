@@ -15,7 +15,7 @@ const onValidateForm = (data: FormProjectData) => {
 
   if (!data.contractAddress) {
     errors.contractAddress = 'Required';
-  } else if (!/^0x[a-fA-F0-9]{40}$/i.test(errors.contractAddress)) {
+  } else if (/^0x[a-fA-F0-9]{40}$/i.test(errors.contractAddress)) {
     errors.contractAddress = 'Not an etherium contract address';
   }
 
@@ -31,6 +31,7 @@ const AddProject = ({ onAdd }: AddProjectProps) => {
         onSubmit={async (values, { setSubmitting, setFieldValue, setFieldError, setFieldTouched }) => {
           const result = await onAdd(values);
           setSubmitting(false);
+          console.log('222', result);
           switch (result.kind) {
             case 'ok':
               setFieldValue('contractAddress', '');
@@ -43,7 +44,16 @@ const AddProject = ({ onAdd }: AddProjectProps) => {
                   setFieldError('contractAddress', 'Contract not found');
                   break;
                 case 'api-response-error':
-                  setFieldError('contractAddress', 'Server error try later');
+                  switch (result.error.status) {
+                    case 409:
+                      setFieldError('contractAddress', 'Project with same address already exist');
+                      break;
+                    default:
+                      setFieldError(
+                        'contractAddress',
+                        `Server error try later [${result.error.status}] [${result.error.statusText}]`,
+                      );
+                  }
                   break;
                 case 'api-network-error':
                   setFieldError('contractAddress', 'Network error');

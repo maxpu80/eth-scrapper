@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import appConfig from '../config';
 import { ApiResult } from './sharedModels';
 
@@ -21,11 +21,19 @@ const ofResponse = <T>(response: AxiosResponse<T>): ApiResult<T> => {
   }
 };
 
-const ofError = <T>(): ApiResult<T> => {
-  return {
-    kind: 'error',
-    error: { kind: 'api-network-error' },
-  };
+const ofError = <T>(err: AxiosError): ApiResult<T> => {
+  const response = err.response;
+  if (response && response.status) {
+    return {
+      kind: 'error',
+      error: { kind: 'api-response-error', status: response.status, statusText: response.statusText },
+    };
+  } else {
+    return {
+      kind: 'error',
+      error: { kind: 'api-network-error' },
+    };
+  }
 };
 
 export const get = async <T>(config: DataAccessConfig, path: string): Promise<ApiResult<T>> => {
@@ -38,7 +46,7 @@ export const get = async <T>(config: DataAccessConfig, path: string): Promise<Ap
     return ofResponse(response);
   } catch (err) {
     console.error(err);
-    return ofError();
+    return ofError(err as any);
   }
 };
 
@@ -52,7 +60,7 @@ export const post = async <T>(config: DataAccessConfig, path: string, data: any)
     return ofResponse(response);
   } catch (err) {
     console.error(err);
-    return ofError();
+    return ofError(err as any);
   }
 };
 
@@ -66,7 +74,7 @@ export const remove = async <T>(config: DataAccessConfig, path: string): Promise
     return ofResponse(response);
   } catch (err) {
     console.error(err);
-    return ofError();
+    return ofError(err as any);
   }
 };
 

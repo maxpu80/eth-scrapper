@@ -5,7 +5,7 @@ open Microsoft.Extensions.Logging
 open Microsoft.AspNetCore.Authorization
 open Common.DaprState
 open Scrapper.Repo.PeojectsRepo
-open ScrapperAPI.Services.ScrapperDispatcherProxy
+open ScrapperAPI.Services.ScrapperDispatcherService
 
 [<ApiController>]
 [<Route("projects")>]

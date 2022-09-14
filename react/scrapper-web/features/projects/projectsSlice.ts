@@ -27,7 +27,7 @@ export const projectsSlice = createSlice({
       return action.payload;
     },
     add: (state, action: PayloadAction<Project>) => {
-      return { ...state, [action.payload.id]: action.payload };
+      return { [action.payload.id]: action.payload, ...state };
     },
     remove: (state, action: PayloadAction<string>) => {
       return omit(state, action.payload);
