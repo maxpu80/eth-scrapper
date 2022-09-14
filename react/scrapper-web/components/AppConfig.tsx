@@ -33,10 +33,12 @@ export const AppConfig = ({ ethProviderUrl, onSetProviderUrl }: AppConfigProps) 
         }}
         validate={onValidateForm}>
         <Form>
+          <label htmlFor="ethProviderUrl">Etherium provider url</label>
+          <br/>
           <Field
             type="text"
             name="ethProviderUrl"
-            placeholder="to start set etherium provider url"
+            placeholder="ex: https://mainnet.infura.io/v3/xxx"
           />
           <ErrorMessage
             name="ethProviderUrl"

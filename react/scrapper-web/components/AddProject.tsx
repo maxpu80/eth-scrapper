@@ -31,7 +31,6 @@ const AddProject = ({ onAdd }: AddProjectProps) => {
         onSubmit={async (values, { setSubmitting, setFieldValue, setFieldError, setFieldTouched }) => {
           const result = await onAdd(values);
           setSubmitting(false);
-          console.log('222', result);
           switch (result.kind) {
             case 'ok':
               setFieldValue('contractAddress', '');
@@ -67,6 +66,7 @@ const AddProject = ({ onAdd }: AddProjectProps) => {
           <Field
             type="text"
             name="contractAddress"
+            placeholder="Contract address"
           />
           <ErrorMessage
             name="contractAddress"

@@ -12,7 +12,7 @@ export interface ProjectsListProps {
 const ProjectsList = ({ projects, onRemove, onVersionAction, onRefresh, ethBlockNumber }: ProjectsListProps) => {
   return (
     <>
-      <a onClick={onRefresh}>refresh</a>
+      <a style={{paddingTop: '15px', display: 'block'}} onClick={onRefresh}>refresh</a>
       <ul>
         {Object.values(projects).map((project) => (
           <li key={project.id}>
