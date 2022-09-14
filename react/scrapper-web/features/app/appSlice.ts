@@ -72,6 +72,9 @@ function queryStateChangesChannel(interval: number) {
   });
 }
 
+//
+export const stateChangesQuery = createAction('projects/stateChangesQuery');
+
 export function* queryStateChanges() {
   yield put(blockNumberQuery());
   yield put(fetchStateChangesRequest());
@@ -81,6 +84,7 @@ export function* queryStateChanges() {
 export function* appSaga() {
   yield takeEvery(rehydrateConfigRequest.toString(), rehydrateConfig);
   yield takeEvery(blockNumberQuery.toString(), fetchBlockNumber);
+  yield takeEvery(stateChangesQuery.toString(), queryStateChanges);
   //@ts-ignore
   // const stateChangesChannel = yield call(queryStateChangesChannel, appConfig.stateChangesQueryInterval);
   // yield takeEvery(stateChangesChannel, queryStateChanges);

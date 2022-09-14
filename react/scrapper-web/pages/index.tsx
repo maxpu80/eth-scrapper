@@ -5,7 +5,13 @@ import AddProject, { FormProjectData } from '../components/AddProject';
 import { AppConfig } from '../components/AppConfig';
 import ProjectsList from '../components/ProjectsList';
 import { getEthBlockNumber, storeEthProviderUrl } from '../features/app/appService';
-import { rehydrateConfigRequest, selectApp, setEthBlockNumber, setEthProviderUrl } from '../features/app/appSlice';
+import {
+  rehydrateConfigRequest,
+  selectApp,
+  setEthBlockNumber,
+  setEthProviderUrl,
+  stateChangesQuery,
+} from '../features/app/appSlice';
 import { VersionAction } from '../features/projects/projectModels';
 import {
   AddProjectData,
@@ -81,9 +87,15 @@ const Projects: NextPage = () => {
     return blockNumberResult;
   };
 
+  const onRefresh = () => {
+    dispatch(stateChangesQuery());
+  };
+
   return (
     <>
-      <AppConfig onSetProviderUrl={onSetProviderUrl} ethProviderUrl={app.config.ethProviderUrl}></AppConfig>
+      <AppConfig
+        onSetProviderUrl={onSetProviderUrl}
+        ethProviderUrl={app.config.ethProviderUrl}></AppConfig>
       {app.config.ethProviderUrl ? (
         <>
           <AddProject onAdd={onAdd}></AddProject>
@@ -91,6 +103,7 @@ const Projects: NextPage = () => {
             projects={projects}
             onVersionAction={onVersionAction}
             onRemove={onRemove}
+            onRefresh={onRefresh}
             ethBlockNumber={app.ethBlockNumber}></ProjectsList>
         </>
       ) : (

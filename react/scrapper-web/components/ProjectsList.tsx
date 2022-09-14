@@ -5,22 +5,26 @@ export interface ProjectsListProps {
   projects: ProjectState;
   onRemove: (id: string) => void;
   onVersionAction: (projectId: string, versionId: string, action: VersionAction) => void;
+  onRefresh: () => void;
   ethBlockNumber: number;
 }
 
-const ProjectsList = ({ projects, onRemove, onVersionAction, ethBlockNumber }: ProjectsListProps) => {
+const ProjectsList = ({ projects, onRemove, onVersionAction, onRefresh, ethBlockNumber }: ProjectsListProps) => {
   return (
-    <ul>
-      {Object.values(projects).map((project) => (
-        <li key={project.id}>
-          {project.name} <a onClick={() => onRemove(project.id)}>remove</a>
-          <VersionsList
-            onAction={(versionId, action) => onVersionAction(project.id, versionId, action)}
-            versions={project.versions}
-            ethBlockNumber={ethBlockNumber}></VersionsList>
-        </li>
-      ))}
-    </ul>
+    <>
+      <a onClick={onRefresh}>refresh</a>
+      <ul>
+        {Object.values(projects).map((project) => (
+          <li key={project.id}>
+            {project.name} <a onClick={() => onRemove(project.id)}>remove</a>
+            <VersionsList
+              onAction={(versionId, action) => onVersionAction(project.id, versionId, action)}
+              versions={project.versions}
+              ethBlockNumber={ethBlockNumber}></VersionsList>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 };
 
