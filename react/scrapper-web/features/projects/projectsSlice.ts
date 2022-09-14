@@ -19,6 +19,9 @@ export interface VersionActionPayload {
 
 const initialState: ProjectState = {};
 
+// refresh
+// set rehydr config
+
 export const projectsSlice = createSlice({
   name: 'projects',
   initialState,

@@ -83,7 +83,7 @@ const Projects: NextPage = () => {
 
   return (
     <>
-      <AppConfig onSetProviderUrl={onSetProviderUrl}></AppConfig>
+      <AppConfig onSetProviderUrl={onSetProviderUrl} ethProviderUrl={app.config.ethProviderUrl}></AppConfig>
       {app.config.ethProviderUrl ? (
         <>
           <AddProject onAdd={onAdd}></AddProject>

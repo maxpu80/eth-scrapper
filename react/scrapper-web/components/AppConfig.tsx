@@ -12,15 +12,17 @@ const onValidateForm = (data: AppData) => {
 };
 
 export interface AppConfigProps {
+  ethProviderUrl: string | null;
   onSetProviderUrl: (url: string) => Promise<Result<number, string>>;
 }
 
-export const AppConfig = ({ onSetProviderUrl }: AppConfigProps) => {
+export const AppConfig = ({ ethProviderUrl, onSetProviderUrl }: AppConfigProps) => {
   return (
     <>
       <h2>Config</h2>
       <Formik
-        initialValues={{ ethProviderUrl: '' }}
+        enableReinitialize={true}
+        initialValues={{ ethProviderUrl: ethProviderUrl || '' }}
         onSubmit={async (values, { setSubmitting, setFieldValue, setFieldError, setFieldTouched }) => {
           const result = await onSetProviderUrl(values.ethProviderUrl);
           if (result.kind === 'ok') {
