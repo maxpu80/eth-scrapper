@@ -29,6 +29,7 @@ type AppId =
 type FailureStatus =
   | CallChildActorFailure of AppId
   | StoreFailure of string
+  | ExternalServiceFailure of string
   static member KnownTypes() = knownTypes<FailureStatus> ()
 
 type FailureData = { AppId: AppId; Status: FailureStatus }

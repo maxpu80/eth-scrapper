@@ -117,7 +117,7 @@ module ScrapperDispatcherActor =
 
           match state with
           | Some state ->
-            let error = "Try to start version which already started"
+            let error = "Trying to start version which already started"
             logger.LogError(error, data)
             return (state, error) |> StateConflict |> Error
           | None ->

@@ -114,11 +114,27 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     };
   }
 
+  private async invokeDispatcherFailure(status: any) {
+    const errorPayload = {
+      AppId: { Scrapper: [] },
+      Status: status,
+    };
+
+    const success = await this.invokeActor('scrapper-dispatcher', 'Failure', errorPayload);
+
+    console.log('call to scrapper dispatcher Failure', success);
+  }
+
   private async publishError(data: Data, result: Result) {
-    const payload = this.mapPublishPayload(data, result);
-    const success = this.invokeActor('scrapper-dispatcher', 'Continue', payload);
-    if (!success) {
-      console.error('fail to invoke scrapper-dispatcher actor');
+    if (result.kind === 'Error' && result.error === 'web3-failure') {
+      // This is real api call failure
+      await this.invokeDispatcherFailure({ ExternalServiceFailure: [`we3 call error: ${result.message}`] });
+    } else {
+      const payload = this.mapPublishPayload(data, result);
+      const success = this.invokeActor('scrapper-dispatcher', 'Continue', payload);
+      if (!success) {
+        console.error('fail to invoke scrapper-dispatcher actor');
+      }
     }
   }
 
@@ -132,16 +148,17 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     const success = await this.invokeActor('scrapper-elastic-store', 'Store', payload);
     if (!success) {
       console.error('fail to invoke scrapper-elastic-store actor');
-      const errorPayload = {
-        AppId: { Scrapper: [] },
-        Status: {
-          CallChildActorFailure: [{ ElasticStore: [] }],
-        },
-      };
+      await this.invokeDispatcherFailure({ CallChildActorFailure: [{ ElasticStore: [] }] });
+      // const errorPayload = {
+      //   AppId: { Scrapper: [] },
+      //   Status: {
+      //     CallChildActorFailure: [{ ElasticStore: [] }],
+      //   },
+      // };
 
-      const success = await this.invokeActor('scrapper-dispatcher', 'Failure', errorPayload);
+      // const success = await this.invokeActor('scrapper-dispatcher', 'Failure', errorPayload);
 
-      console.log('call to scrapper dispatcher Failure', success);
+      // console.log('call to scrapper dispatcher Failure', success);
     }
   }
 
