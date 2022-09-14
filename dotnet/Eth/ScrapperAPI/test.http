@@ -28,6 +28,13 @@ Accept: application/json
   "versionId": "v1"
 }
 
+###
+
+GET {{host}}/projects/0xdac17f958d2ee523a2206206994597c13d831ec7/versions/v1/state
+dapr-app-id: {{appId}}
+Content-Type: application/json 
+Accept: application/json
+
 
 ###
 

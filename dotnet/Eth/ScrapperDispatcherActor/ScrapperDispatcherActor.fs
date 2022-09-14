@@ -50,7 +50,6 @@ module ScrapperDispatcherActor =
 
   let private runScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
     let dto = scrapperRequest |> toDTO
-
     invokeActor<ScrapperRequestDTO, Result> proxyFactory actorId "ScrapperActor" "scrap" dto
 
 
@@ -63,7 +62,48 @@ module ScrapperDispatcherActor =
     let logger = ActorLogging.create host
     let stateManager = stateManager<State> STATE_NAME this.StateManager
 
+    let runScrapper (state: State option) (scrapperRequest: ScrapperRequest) =
+
+      logger.LogDebug("Run scrapper with {@data} {@state}", scrapperRequest, state)
+
+      task {
+        let! result = runScrapper this.ProxyFactory this.Id scrapperRequest
+
+        let finishDate =
+          match state with
+          | Some state -> state.FinishDate
+          | None -> None
+
+        match result with
+        | Ok _ ->
+          let state: State =
+            { Status = Status.Continue
+              Request = scrapperRequest
+              Date = epoch ()
+              FinishDate = finishDate }
+
+          do! stateManager.Set state
+
+          return state |> Ok
+        | Error _ ->
+          let state: State =
+            { Status =
+                { Data =
+                    { AppId = AppId.Dispatcher
+                      Status = AppId.Scrapper |> CallChildActorFailure }
+                  RetriesCount = 0u }
+                |> Status.Failure
+              Request = scrapperRequest
+              Date = epoch ()
+              FinishDate = finishDate }
+
+          do! stateManager.Set state
+
+          return state |> ActorFailure |> Error
+      }
+
     interface IScrapperDispatcherActor with
+
       member this.Start data =
 
         logger.LogDebug("Start with {@data}", data)
@@ -84,19 +124,7 @@ module ScrapperDispatcherActor =
                 Abi = data.Abi
                 BlockRange = { From = None; To = None } }
 
-            logger.LogDebug("Run scrapper with @{data}", scrapperRequest)
-
-            do! runScrapper this.ProxyFactory this.Id scrapperRequest
-
-            let state: State =
-              { Status = Status.Continue
-                Request = scrapperRequest
-                Date = epoch ()
-                FinishDate = None }
-
-            do! stateManager.Set state
-
-            return state |> Ok
+            return! runScrapper None scrapperRequest
         }
 
       member this.Continue data =
@@ -125,24 +153,14 @@ module ScrapperDispatcherActor =
 
               logger.LogDebug("Stop check is false, continue", scrapperRequest)
 
-              let finishDate =
-                match state with
-                | Some state -> state.FinishDate
-                | None ->
-                  logger.LogWarning("Continue, but state not found")
-                  None
 
-              do! runScrapper this.ProxyFactory this.Id scrapperRequest
+              match state with
+              | None ->
+                logger.LogWarning("Continue, but state not found")
+                ()
+              | _ -> ()
 
-              let state: State =
-                { Status = Status.Continue
-                  Request = scrapperRequest
-                  Date = epoch ()
-                  FinishDate = finishDate }
-
-              do! stateManager.Set state
-
-              return state |> Ok
+              return! runScrapper state scrapperRequest
 
             | true ->
 
@@ -192,8 +210,10 @@ module ScrapperDispatcherActor =
 
           match state with
           | Some state ->
-            if state.Status = Status.Pause
-               || state.Status = Status.Finish then
+            match state.Status with
+            | Status.Pause
+            | Status.Finish
+            | Status.Failure _ ->
 
               let updatedState =
                 { state with
@@ -202,11 +222,8 @@ module ScrapperDispatcherActor =
 
               logger.LogInformation("Resume with {@pervState} {@state}", state, updatedState)
 
-              do! runScrapper this.ProxyFactory this.Id updatedState.Request
-
-              do! stateManager.Set updatedState
-              return updatedState |> Ok
-            else
+              return! runScrapper (Some state) updatedState.Request
+            | _ ->
               let error = "Actor in a wrong state"
               logger.LogDebug(error)
               return (state, error) |> StateConflict |> Error
@@ -256,4 +273,29 @@ module ScrapperDispatcherActor =
           | None ->
             logger.LogDebug("Can't schedule, wrong state {@state}", state)
             return StateNotFound |> Error
+        }
+
+      member this.Failure(data: FailureData) =
+        task {
+          let! state = stateManager.Get()
+
+          match state with
+          | Some state ->
+            let state =
+              { state with
+                  Status =
+                    { Data = data; RetriesCount = 0u }
+                    |> Status.Failure
+                  Date = epoch () }
+
+            logger.LogInformation("Failure with {@state}", state)
+
+            do! stateManager.Set(state)
+
+            return Some state
+
+          | None ->
+            logger.LogWarning("Failure {@failure} but state is not found", state)
+
+            return None
         }

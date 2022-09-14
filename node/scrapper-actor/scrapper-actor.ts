@@ -76,7 +76,7 @@ const mapPublishResult = (indexId: string, requestBlockRange: RequestBlockRange,
 };
 
 export interface IScrapperActor {
-  scrap(data: Data): Promise<any>;
+  scrap(data: Data): boolean;
 }
 
 export default class ScrapperActor extends AbstractActor implements IScrapperActor {
@@ -128,7 +128,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     }
   }
 
-  async scrap(data: Data) {
+  async _scrap(data: Data) {
     console.log("scrapper::scrap::start", data.blockRange);
 
     const abi = JSON.parse(data.abi);
@@ -149,5 +149,10 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
     console.log("scrapper::scrap::publish", publishedResult.contractAddress);
 
     return publishedResult;
+  }
+
+  scrap(data: Data) {
+    this._scrap(data);
+    return true;
   }
 }

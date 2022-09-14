@@ -24,7 +24,8 @@ module private DTO =
         | Status.Continue -> "continue"
         | Status.Pause -> "pause"
         | Status.Finish -> "finish"
-        | Status.Schedule -> "schedule" |}
+        | Status.Schedule -> "schedule"
+        | Status.Failure _ -> "failure" |}
 
   let mapProjectsWithViewStates (projects: ProjectWithVresionsAndState list) =
     projects
@@ -48,3 +49,4 @@ module private DTO =
         )
         :> IActionResult
       | StateNotFound -> NotFoundObjectResult() :> IActionResult
+      | ActorFailure state -> UnprocessableEntityObjectResult({| State = mapState (state) |}) :> IActionResult

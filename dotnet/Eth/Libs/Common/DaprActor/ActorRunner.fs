@@ -14,10 +14,14 @@ module ActorRunner =
     =
     task {
 
-      let actor = proxyFactory.Create(actorId, actorType)
+      try
+        let actor = proxyFactory.Create(actorId, actorType)
 
-      actor.InvokeMethodAsync<'a, 'r>(methodName, data)
-      |> ignore
+        let! _ = actor.InvokeMethodAsync<'a, 'r>(methodName, data)
+
+        return Ok()
+      with
+      | _ -> return Error()
     }
 
   let invokeActorId<'a, 'r> (actorHost: ActorHost) actorType methodName (data: 'a) =

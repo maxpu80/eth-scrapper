@@ -18,12 +18,31 @@ type ContinueData =
     Abi: string
     Result: Result }
 
+
 [<RequireQualifiedAccess>]
+type AppId =
+  | Dispatcher
+  | ElasticStore
+  | Scrapper
+
+type FailureStatus = CallChildActorFailure of AppId
+
+type FailureData = { AppId: AppId; Status: FailureStatus }
+
+type Failure =
+  { Data: FailureData
+    RetriesCount: uint }
+
+[<RequireQualifiedAccess>]
+[<KnownType("KnownTypes")>]
 type Status =
   | Continue
   | Pause
   | Finish
   | Schedule
+  | Failure of Failure
+  static member KnownTypes() =
+    knownTypes<Status> ()
 
 type State =
   { Status: Status
@@ -34,6 +53,7 @@ type State =
 
 [<KnownType("KnownTypes")>]
 type ScrapperDispatcherActorError =
+  | ActorFailure of State
   | StateConflict of State * string
   | StateNotFound
   static member KnownTypes() =
@@ -41,7 +61,6 @@ type ScrapperDispatcherActorError =
 
 
 type ScrapperDispatcherActorResult = Result<State, ScrapperDispatcherActorError>
-
 
 type IScrapperDispatcherActor =
   inherit IActor
@@ -52,3 +71,4 @@ type IScrapperDispatcherActor =
   abstract State: unit -> Task<State option>
   abstract Reset: unit -> Task<bool>
   abstract Schedule: unit -> Task<ScrapperDispatcherActorResult>
+  abstract Failure: data: FailureData -> Task<State option>
