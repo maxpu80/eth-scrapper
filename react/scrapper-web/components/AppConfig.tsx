@@ -36,6 +36,7 @@ export const AppConfig = ({ ethProviderUrl, onSetProviderUrl }: AppConfigProps) 
           <Field
             type="text"
             name="ethProviderUrl"
+            placeholder="to start set etherium provider url"
           />
           <ErrorMessage
             name="ethProviderUrl"

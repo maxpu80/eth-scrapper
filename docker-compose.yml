@@ -160,5 +160,15 @@ services:
     depends_on:
       - scrapper-api
     network_mode: "service:scrapper-api"
+  ############################
+  # scrapper-web
+  ############################
+  scrapper-web:
+    build: 
+      context: ./react/scrapper-web
+      dockerfile: Dockerfile         
+    ports:
+      - 6002:80
+      
 networks:
     dapr-net:
