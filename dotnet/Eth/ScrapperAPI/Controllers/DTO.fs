@@ -37,16 +37,21 @@ module private DTO =
                {| version with
                     State = version.State |> Option.map mapState |> toNullable |}) |})
 
+  let mapScrapperDispatcherActorError (err: ScrapperDispatcherActorError) =
+    match err with
+    | StateConflict (state, error) ->
+      ConflictObjectResult(
+        {| State = (mapState state)
+           Error = error |}
+      )
+      :> IActionResult
+    | StateNotFound -> NotFoundObjectResult() :> IActionResult
+    | ActorFailure state -> UnprocessableEntityObjectResult({| State = mapState (state) |}) :> IActionResult
+
+  let mapScrapperDispatcherActorSuccess (state: State) =
+    state |> mapState |> OkObjectResult :> IActionResult
+
   let mapScrapperDispatcherActorResult (result: ScrapperDispatcherActorResult) =
     match result with
-    | Ok state -> state |> mapState |> OkObjectResult :> IActionResult
-    | Error err ->
-      match err with
-      | StateConflict (state, error) ->
-        ConflictObjectResult(
-          {| State = (mapState state)
-             Error = error |}
-        )
-        :> IActionResult
-      | StateNotFound -> NotFoundObjectResult() :> IActionResult
-      | ActorFailure state -> UnprocessableEntityObjectResult({| State = mapState (state) |}) :> IActionResult
+    | Ok state -> mapScrapperDispatcherActorSuccess state
+    | Error err -> mapScrapperDispatcherActorError err

@@ -20,7 +20,7 @@ type Error =
     RequestBlockRange: RequestBlockRange
     BlockRange: BlockRange }
 
-type Result = Result<Success, Error>
+type ScrapperResult = Result<Success, Error>
 
 type ScrapperRequest =
   { EthProviderUrl: string

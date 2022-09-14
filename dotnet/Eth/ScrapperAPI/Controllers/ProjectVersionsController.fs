@@ -30,19 +30,9 @@ type ProjectVersionssController(env: DaprStoreEnv) =
       match result with
       | Error err ->
         match err with
-        | ActorStartFailure -> return this.StatusCode(500, {| Message = "Actor start failure" |}) :> IActionResult
-        | AfterActorStartStateNotFound ->
-          return this.StatusCode(500, {| Message = "Actor started but state not found" |})
+        | ActorFailure err -> return err |> DTO.mapScrapperDispatcherActorError
         | RepoError err -> return mapRepoError err
-      | Ok result ->
-        return
-          this.AcceptedAtAction(
-            "State",
-            {| ProjectId = projectId
-               VersionId = versionId |},
-            result
-          )
-          :> IActionResult
+      | Ok result -> return result |> DTO.mapScrapperDispatcherActorSuccess
     }
 
   [<HttpGet("{versionId}/state")>]

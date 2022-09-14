@@ -36,7 +36,7 @@ module ScrapperDispatcherActor =
             | Some _to -> System.Nullable(_to)
             | None -> System.Nullable() } }
 
-  let private checkStop (result: Result) =
+  let private checkStop (result: ScrapperResult) =
     match result with
     // read successfully till the latest block
     | Ok success when success.RequestBlockRange.To = None -> true
@@ -50,7 +50,7 @@ module ScrapperDispatcherActor =
 
   let private runScrapper (proxyFactory: Client.IActorProxyFactory) actorId scrapperRequest =
     let dto = scrapperRequest |> toDTO
-    invokeActor<ScrapperRequestDTO, Result> proxyFactory actorId "ScrapperActor" "scrap" dto
+    invokeActor<ScrapperRequestDTO, bool> proxyFactory actorId "ScrapperActor" "scrap" dto
 
 
   let private STATE_NAME = "state"
@@ -68,6 +68,8 @@ module ScrapperDispatcherActor =
 
       task {
         let! result = runScrapper this.ProxyFactory this.Id scrapperRequest
+
+        logger.LogDebug("Run scrapper result {@result}", result)
 
         let finishDate =
           match state with
@@ -96,6 +98,7 @@ module ScrapperDispatcherActor =
               Request = scrapperRequest
               Date = epoch ()
               FinishDate = finishDate }
+
 
           do! stateManager.Set state
 

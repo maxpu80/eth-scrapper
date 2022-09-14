@@ -16,7 +16,7 @@ type ContinueData =
   { EthProviderUrl: string
     ContractAddress: string
     Abi: string
-    Result: Result }
+    Result: ScrapperResult }
 
 
 [<RequireQualifiedAccess>]
@@ -25,7 +25,11 @@ type AppId =
   | ElasticStore
   | Scrapper
 
-type FailureStatus = CallChildActorFailure of AppId
+[<KnownType("KnownTypes")>]
+type FailureStatus =
+  | CallChildActorFailure of AppId
+  | StoreFailure of string
+  static member KnownTypes() = knownTypes<FailureStatus> ()
 
 type FailureData = { AppId: AppId; Status: FailureStatus }
 
@@ -41,8 +45,7 @@ type Status =
   | Finish
   | Schedule
   | Failure of Failure
-  static member KnownTypes() =
-    knownTypes<Status> ()
+  static member KnownTypes() = knownTypes<Status> ()
 
 type State =
   { Status: Status

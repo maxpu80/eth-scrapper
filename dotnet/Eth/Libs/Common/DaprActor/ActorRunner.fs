@@ -21,7 +21,7 @@ module ActorRunner =
 
         return Ok()
       with
-      | _ -> return Error()
+      | _ as ex -> return Error(ex)
     }
 
   let invokeActorId<'a, 'r> (actorHost: ActorHost) actorType methodName (data: 'a) =

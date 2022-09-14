@@ -19,13 +19,15 @@ module ScrapperStoreActor =
 
     logger.LogDebug("Store scrapper payload to elasticsearch {config}", elasticConfig)
 
-    let elasticConfig = new ConnectionConfiguration(System.Uri(elasticConfig))
-    let client = ElasticLowLevelClient(elasticConfig)
-
-    let data = PostData.String(indexPayload)
 
     task {
       try
+
+        let elasticConfig = new ConnectionConfiguration(System.Uri(elasticConfig))
+        let client = ElasticLowLevelClient(elasticConfig)
+
+        let data = PostData.String(indexPayload)
+
         let! response = client.BulkAsync<VoidResponse> data
 
         logger.LogInformation(
@@ -37,15 +39,15 @@ module ScrapperStoreActor =
         if not response.Success then
           raise response.OriginalException
 
-        return ()
+        return true
       with
       | _ as err ->
         logger.LogError("Store scrapper payload to elasticsearch error {@error}", err)
-        return ()
+        return false
 
     }
 
-  let runScrapperDispatcher (proxyFactory: Client.IActorProxyFactory) id (data: ContinueSuccessData) =
+  let runScrapperDispatcherContinue (proxyFactory: Client.IActorProxyFactory) id (data: ContinueSuccessData) =
     let actor =
       proxyFactory.CreateActorProxy<IScrapperDispatcherActor>(id, "scrapper-dispatcher")
 
@@ -62,6 +64,17 @@ module ScrapperStoreActor =
 
     actor.Continue continueData |> ignore
 
+  let runScrapperDispatcherFailure (proxyFactory: Client.IActorProxyFactory) id =
+    let actor =
+      proxyFactory.CreateActorProxy<IScrapperDispatcherActor>(id, "scrapper-dispatcher")
+
+
+    let failureData: FailureData =
+      { AppId = AppId.ElasticStore
+        Status = StoreFailure "Failed to store in elasticsearch" }
+
+    actor.Failure failureData |> ignore
+
 
   [<Actor(TypeName = "scrapper-elastic-store")>]
   type ScrapperElasticStoreActor(host: ActorHost, config: IConfiguration) =
@@ -72,7 +85,11 @@ module ScrapperStoreActor =
       member this.Store data =
         task {
           let config = elasticConfig config
-          do! store logger config data.Result.IndexPayload
-          runScrapperDispatcher this.ProxyFactory this.Id data
-          return true
+          let! result = store logger config data.Result.IndexPayload
+
+          match result with
+          | true -> runScrapperDispatcherContinue this.ProxyFactory this.Id data
+          | false -> runScrapperDispatcherFailure this.ProxyFactory this.Id
+
+          return result
         }

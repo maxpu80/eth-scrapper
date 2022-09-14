@@ -1,7 +1,7 @@
-import { AbstractActor } from "@dapr/dapr";
-import axios from "axios";
-import { Data as HandlerData, Entry, Error, handle, Result, Success } from "./handler";
-const _ = require("lodash");
+import { AbstractActor } from '@dapr/dapr';
+import axios from 'axios';
+import { Data as HandlerData, Entry, Error, handle, Result, Success } from './handler';
+const _ = require('lodash');
 
 //
 
@@ -30,9 +30,9 @@ const mapPublishResultSuccess = (indexId: string, requestBlockRange: RequestBloc
   const events = result.events.map((evt) => {
     const meta = JSON.stringify({ create: { _index: indexId, _id: `${evt.block}_${evt.index}` } });
     const data = JSON.stringify(mapEntry(evt));
-    return [meta, data].join("\n");
+    return [meta, data].join('\n');
   });
-  const eventsElasticPayload = events.join("\n") + "\n";
+  const eventsElasticPayload = events.join('\n') + '\n';
   return {
     Ok: [
       {
@@ -46,11 +46,11 @@ const mapPublishResultSuccess = (indexId: string, requestBlockRange: RequestBloc
 
 const mapPublishResultErrorData = (result: Error) => {
   switch (result.error) {
-    case "empty-result":
+    case 'empty-result':
       return { EmptyResult: [] };
-    case "limit-exceeded":
+    case 'limit-exceeded':
       return { LimitExceeded: [] };
-    case "unknown":
+    case 'unknown':
       return { Unknown: [] };
   }
 };
@@ -68,15 +68,15 @@ const mapPublishResultError = (requestBlockRange: RequestBlockRange, result: Err
 
 const mapPublishResult = (indexId: string, requestBlockRange: RequestBlockRange, result: Result) => {
   switch (result.kind) {
-    case "Success":
+    case 'Success':
       return mapPublishResultSuccess(indexId, requestBlockRange, result);
-    case "Error":
+    case 'Error':
       return mapPublishResultError(requestBlockRange, result);
   }
 };
 
 export interface IScrapperActor {
-  scrap(data: Data): boolean;
+  scrap(data: Data): Promise<boolean>;
 }
 
 export default class ScrapperActor extends AbstractActor implements IScrapperActor {
@@ -87,9 +87,9 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
 
     const url = `${client.daprHost}:${client.daprPort}/v1.0/actors/${actorType}/${actorId}/method/${actorMethod}`;
 
-    await axios.put(url, payload);
+    const result = await axios.put(url, payload);
 
-    return payload;
+    return result;
   }
 
   private mapPublishPayload(data: Data, result: Result) {
@@ -105,8 +105,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
 
   private async publishError(data: Data, result: Result) {
     const payload = this.mapPublishPayload(data, result);
-
-    return this.invokeActor("scrapper-dispatcher", "Continue", payload);
+    return this.invokeActor('scrapper-dispatcher', 'Continue', payload);
   }
 
   private async publishSuccess(data: Data, result: Success) {
@@ -116,20 +115,33 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
       result: (_payload.result as any).Ok[0],
     };
 
-    return this.invokeActor("scrapper-elastic-store", "Store", payload);
+    try {
+      return this.invokeActor('scrapper-elastic-store', 'Store', payload);
+    } catch (err) {
+      console.error('fail to invoke scrapper-elastic-store actor');
+      const payload = {
+        AppId: 'Scrapper',
+        Status: {
+          CallChildActorFailure: [
+            'ElasticStore'
+          ]
+        }
+      }
+      this.invokeActor('scrapper-dispatcher', 'Failure', payload);
+    }
   }
 
   private async publish(data: Data, result: Result) {
     switch (result.kind) {
-      case "Success":
+      case 'Success':
         return this.publishSuccess(data, result);
-      case "Error":
+      case 'Error':
         return this.publishError(data, result);
     }
   }
 
   async _scrap(data: Data) {
-    console.log("scrapper::scrap::start", data.blockRange);
+    console.log('scrapper::scrap::start', data.blockRange);
 
     const abi = JSON.parse(data.abi);
 
@@ -142,16 +154,16 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
 
     const result = await handle(handlerData);
 
-    console.log("scrapper::scrap::result", result.blockRange, result.kind === "Success" ? "Success" : result.error);
+    console.log('scrapper::scrap::result', result.blockRange, result.kind === 'Success' ? 'Success' : result.error);
 
     const publishedResult = await this.publish(data, result);
 
-    console.log("scrapper::scrap::publish", publishedResult.contractAddress);
+    console.log('scrapper::scrap::publish', publishedResult.contractAddress);
 
     return publishedResult;
   }
 
-  scrap(data: Data) {
+  async scrap(data: Data) {
     this._scrap(data);
     return true;
   }

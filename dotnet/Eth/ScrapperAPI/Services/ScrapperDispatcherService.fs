@@ -70,8 +70,7 @@ module ScrapperDispatcherService =
 
 
   type StartError =
-    | ActorStartFailure
-    | AfterActorStartStateNotFound
+    | ActorFailure of ScrapperDispatcherActorError
     | RepoError of RepoError
 
   let start (env: DaprStoreEnv) projectId versionId =
@@ -93,13 +92,9 @@ module ScrapperDispatcherService =
         let! result = actor.Start data
 
         match result with
-        | Ok _ ->
-          let! result = state projectId ver.Id
+        | Ok result -> return result |> Ok
+        | Error err -> return err |> ActorFailure |> Error
 
-          match result with
-          | Some state -> return Ok state
-          | None -> return AfterActorStartStateNotFound |> Error
-        | Error err -> return ActorStartFailure |> Error
       | Error err -> return err |> RepoError |> Error
 
     }
