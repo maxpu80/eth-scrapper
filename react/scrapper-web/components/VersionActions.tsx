@@ -11,6 +11,7 @@ export const VersionActions = ({ state, onAction }: VersionActionsProps) => {
       case 'continue':
         return <a onClick={() => onAction('pause')}>pause</a>;
       case 'pause':
+      case 'failure':
         return <a onClick={() => onAction('resume')}>resume</a>;
     }
   };

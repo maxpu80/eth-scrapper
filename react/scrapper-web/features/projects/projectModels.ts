@@ -1,6 +1,6 @@
 import { ApiError, ApiResult } from '../sharedModels';
 
-export type ScrapperStatus = 'continue' | 'pause' | 'finish' | 'schedule';
+export type ScrapperStatus = 'continue' | 'pause' | 'finish' | 'schedule' | 'failure';
 
 export interface ScrapperRequestBlock {
   from?: number;

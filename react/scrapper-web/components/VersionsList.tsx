@@ -33,8 +33,8 @@ export const VersionsList = ({ versions, onAction, ethBlockNumber }: VersionsLis
             onAction={(action) => onAction(x.id, action)}></VersionActions>
           <br />
           <small>
-            state: {x.state ? x.state.status : 'not started'} last updated{' '}
-            {x.state ? new Date(x.state.date * 1000).toISOString() : '---'}
+            state: [{x.state ? x.state.status : 'not started'}] [last updated
+            {x.state ? new Date(x.state.date * 1000).toISOString() : '---'}]
           </small>
           {renderProgress(x.state)}
         </li>
