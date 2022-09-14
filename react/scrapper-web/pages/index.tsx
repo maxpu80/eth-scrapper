@@ -1,7 +1,7 @@
 import type { NextPage } from 'next';
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import AddProject from '../components/AddProject';
+import AddProject, { FormProjectData } from '../components/AddProject';
 import { AppConfig } from '../components/AppConfig';
 import ProjectsList from '../components/ProjectsList';
 import { getEthBlockNumber, storeEthProviderUrl } from '../features/app/appService';
@@ -31,7 +31,7 @@ const Projects: NextPage = () => {
     started = true;
   });
 
-  const onAdd = async (data: AddProjectData) => {
+  const onAdd = async (data: FormProjectData) => {
     // TODO: ethProviderUrl must be set when project created
     const result = await createProject({ ...data, ethProviderUrl: app.config.ethProviderUrl! });
     switch (result.kind) {

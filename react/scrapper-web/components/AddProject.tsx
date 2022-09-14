@@ -1,19 +1,21 @@
 import { ErrorMessage, Field, Form, Formik } from 'formik';
+import { getEthProviderUrl } from '../features/app/appService';
 import { CreateProjectError, CreateProjectResult } from '../features/projects/projectModels';
 import { AddProjectData } from '../features/projects/projectsService';
 
 export type AddResult = 'ok' | CreateProjectError;
 
+export type FormProjectData = Pick<AddProjectData, 'contractAddress'>;
 export interface AddProjectProps {
-  onAdd: (evt: AddProjectData) => Promise<CreateProjectResult>;
+  onAdd: (evt: FormProjectData) => Promise<CreateProjectResult>;
 }
 
-const onValidateForm = (data: AddProjectData) => {
+const onValidateForm = (data: FormProjectData) => {
   const errors = {} as any;
 
   if (!data.contractAddress) {
     errors.contractAddress = 'Required';
-  } else if (false && !/^0x[a-fA-F0-9]{40}$/i.test(errors.contractAddress)) {
+  } else if (!/^0x[a-fA-F0-9]{40}$/i.test(errors.contractAddress)) {
     errors.contractAddress = 'Not an etherium contract address';
   }
 
