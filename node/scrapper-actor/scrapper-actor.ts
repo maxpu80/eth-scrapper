@@ -87,9 +87,20 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
 
     const url = `${client.daprHost}:${client.daprPort}/v1.0/actors/${actorType}/${actorId}/method/${actorMethod}`;
 
-    const result = await axios.put(url, payload);
+    try {
+      const result = await axios.put(url, payload);
 
-    return result;
+      const f = result.status === 200;
+      if (!f) {
+        console.log(result);
+        console.error(`Call actor error ${url}`, result.data);
+      }
+      return f;
+    } catch (ex) {
+      console.log(ex);
+      console.error(`Call actor error`);
+      return false;
+    }
   }
 
   private mapPublishPayload(data: Data, result: Result) {
@@ -105,7 +116,10 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
 
   private async publishError(data: Data, result: Result) {
     const payload = this.mapPublishPayload(data, result);
-    return this.invokeActor('scrapper-dispatcher', 'Continue', payload);
+    const success = this.invokeActor('scrapper-dispatcher', 'Continue', payload);
+    if (!success) {
+      console.error('fail to invoke scrapper-dispatcher actor');
+    }
   }
 
   private async publishSuccess(data: Data, result: Success) {
@@ -115,19 +129,19 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
       result: (_payload.result as any).Ok[0],
     };
 
-    try {
-      return this.invokeActor('scrapper-elastic-store', 'Store', payload);
-    } catch (err) {
+    const success = await this.invokeActor('scrapper-elastic-store', 'Store', payload);
+    if (!success) {
       console.error('fail to invoke scrapper-elastic-store actor');
-      const payload = {
-        AppId: 'Scrapper',
+      const errorPayload = {
+        AppId: { Scrapper: [] },
         Status: {
-          CallChildActorFailure: [
-            'ElasticStore'
-          ]
-        }
-      }
-      this.invokeActor('scrapper-dispatcher', 'Failure', payload);
+          CallChildActorFailure: [{ ElasticStore: [] }],
+        },
+      };
+
+      const success = await this.invokeActor('scrapper-dispatcher', 'Failure', errorPayload);
+
+      console.log('call to scrapper dispatcher Failure', success);
     }
   }
 
@@ -158,7 +172,7 @@ export default class ScrapperActor extends AbstractActor implements IScrapperAct
 
     const publishedResult = await this.publish(data, result);
 
-    console.log('scrapper::scrap::publish', publishedResult.contractAddress);
+    console.log('scrapper::scrap::publish', data.contractAddress);
 
     return publishedResult;
   }
